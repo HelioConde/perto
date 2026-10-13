@@ -905,3 +905,41 @@ test('English mode shows accurate privacy copy and share text',async({page})=>{
   const message=new URL(await page.locator('#search-whatsapp').getAttribute('href')).searchParams.get('text');
   expect(message).toContain('Know a service provider');
 });
+
+
+test('empty verified catalog invites first professionals without fictitious listings',async({page})=>{
+  await installMock(page,{profiles:[]});
+  await page.goto('/');
+  await expect(page.locator('#hero-count')).toHaveText('0');
+  await expect(page.locator('#hero-count-label')).toContainText('Ainda não há anúncios aprovados');
+  await expect(page.locator('#hero-founders')).toBeVisible();
+  await expect(page.locator('#hero-founders')).toHaveAttribute('href','./convite.html');
+  await page.locator('#hero-founders').click();
+  await expect(page).toHaveURL(/convite\.html$/);
+  await expect(page.locator('#convite-register')).toBeVisible();
+});
+
+test('verified nonempty catalog shows the actual count without founder CTA',async({page})=>{
+  await installMock(page,{profiles:[activeProfile,pendingProfile]});
+  await page.goto('/');
+  await expect(page.locator('#hero-count')).toHaveText('1');
+  await expect(page.locator('#hero-founders')).toBeHidden();
+  await expect(page.locator('#hero-count-label')).toContainText('disponíveis no catálogo');
+});
+
+test('unavailable catalog displays an unknown count rather than a false zero',async({page})=>{
+  await page.route('https://cdn.jsdelivr.net/**',route=>route.abort());
+  await page.goto('/');
+  await expect(page.locator('#hero-count')).toHaveText('—');
+  await expect(page.locator('#hero-count-label')).toContainText('Contagem indisponível');
+  await expect(page.locator('#hero-founders')).toBeHidden();
+});
+
+test('founding professional CTA and count copy translate into English',async({page})=>{
+  await installMock(page,{profiles:[]});
+  await page.goto('/');
+  await page.locator('[data-perto-lang="en"]').click();
+  await expect(page.locator('#hero-count')).toHaveText('0');
+  await expect(page.locator('#hero-count-label')).toContainText('No approved listings yet');
+  await expect(page.locator('#hero-founders')).toHaveText('Be among the first professionals');
+});

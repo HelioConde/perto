@@ -187,3 +187,7 @@ A nova interface do prestador mostra o status (pendente, aprovado, rejeitado, pa
 Um visitante pode divulgar o **link de busca por região/categoria** gerado após pesquisar. O parâmetro `buscar=1` ativa os filtros de cidade, UF e categoria e executa a pesquisa na URL pública, sem autorização nem cookie de rastreamento. O campo de texto livre nunca entra nesse link. Não representar links de busca como páginas indexadas únicas, pois a home mantém `canonical` próprio.
 
 Validação esperada: abrir `https://helioconde.github.io/perto/?buscar=1&cidade=Campinas&uf=SP&categoria=Eletricista`; o catálogo pode estar vazio enquanto não existirem anúncios aprovados. Compartilhar pesquisas é voluntário, não automático.
+
+## 18. Contagem real do catálogo e início do beta
+
+A contagem da home distingue **0 confirmado** de **erro de rede** e estado de carregamento. Caso a consulta ao Supabase confirme que não existem perfis ativos, a interface apresenta um convite explícito aos primeiros profissionais. Se a API estiver indisponível, nenhum número fictício será exibido. A interface fica coberta por E2E simulado e deve ser conferida em produção com a conexão anônima real.

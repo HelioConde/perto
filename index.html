@@ -36,10 +36,11 @@
             <a class="button ghost" href="#para-profissionais" data-perto-text="offerYourService">Sou profissional</a>
           </div>
         </div>
-        <aside class="hero-card">
+        <aside class="hero-card" aria-label="Situação atual do catálogo">
           <span data-perto-text="activePros">Profissionais ativos</span>
-          <strong id="hero-count">0</strong>
-          <small data-perto-text="available">disponíveis no catálogo agora</small>
+          <strong id="hero-count" aria-live="polite">—</strong>
+          <small id="hero-count-label" data-perto-text="countLoading">Consultando o catálogo...</small>
+          <a id="hero-founders" class="button ghost hero-founders" href="./convite.html" data-perto-text="firstProfessionals" hidden>Seja um dos primeiros profissionais</a>
         </aside>
       </section>
 

@@ -99,3 +99,7 @@ Para consultar a checklist de publicação/autenticação e limites do MVP, veja
 - Links não incluem nomes ou descrições digitados no campo de texto livre: isso evita divulgar acidentalmente detalhes pessoais da pesquisa. Estado e categoria são validados por lista permitida.
 - O compartilhamento não é uma página SEO estática por município nem garante que já existam prestadores: a busca vazia continua convidando profissionais verdadeiros.
 - Trocar filtros oculta o link antigo até uma nova pesquisa. A interface também funciona em inglês e celular.
+
+## Convite honesto quando o catálogo está vazio
+
+A home mostra contagem real de anúncios ativos: durante a consulta exibe um traço, não um zero inventado. Se o banco confirmar 0 profissionais aprovados, surge um botão para os primeiros prestadores acessarem a página de convite. Quando a consulta falha ou o serviço está fora do ar, aparece **Contagem indisponível** em vez de declarar que não há profissionais. O CTA de fundadores não promete vantagens, contratos nem prioridade futura.

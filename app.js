@@ -34,6 +34,8 @@ let pendingProfessionalSignup=false;
 let loadingAccount=false;
 let requestFilter='all';
 let searchHasRun=false;
+let catalogCount=null;
+let catalogCountLoading=true;
 
 function escapeHtml(value=''){return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function money(cents){return cents==null?T('consult'):(Number(cents)/100).toLocaleString(locale(),{style:'currency',currency:'BRL'});}
@@ -171,10 +173,25 @@ async function loadSharedProfile(){
   }
 }
 
+function renderCatalogCount(){
+  document.querySelector('#hero-count').textContent=catalogCountLoading?'—':catalogCount===null?'—':String(catalogCount);
+  document.querySelector('#hero-count-label').textContent=T(catalogCountLoading?'countLoading':catalogCount===null?'countUnavailable':catalogCount===0?'countEmpty':'available');
+  document.querySelector('#hero-founders').hidden=catalogCount!==0;
+}
 async function loadActiveCount(){
-  if(!supabaseClient)return;
-  const {count,error}=await supabaseClient.from('perto_professionals').select('id',{count:'exact',head:true}).eq('status','active');
-  if(!error)document.querySelector('#hero-count').textContent=String(count||0);
+  catalogCountLoading=true;renderCatalogCount();
+  if(!supabaseClient){
+    catalogCount=null;catalogCountLoading=false;renderCatalogCount();return;
+  }
+  try{
+    const {count,error}=await supabaseClient.from('perto_professionals').select('id',{count:'exact',head:true}).eq('status','active');
+    if(error||!Number.isSafeInteger(count)||count<0)throw error||new Error('invalid_count');
+    catalogCount=count;
+  }catch(error){
+    console.error(error);catalogCount=null;
+  }finally{
+    catalogCountLoading=false;renderCatalogCount();
+  }
 }
 
 function professionalCard(profile){
@@ -705,6 +722,7 @@ init();
 
 // Language changes preserve filters, session and user-supplied content.
 window.addEventListener('perto:language-change',()=>{
+  renderCatalogCount();
   updateAccountUi();
   renderProfile();
   renderRequestList();
