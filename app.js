@@ -30,6 +30,7 @@ let currentProfile=null;
 let userRequests=[];
 let searchResults=[];
 let pendingRequestProfessionalId='';
+let pendingProfessionalSignup=false;
 let loadingAccount=false;
 let requestFilter='all';
 
@@ -41,6 +42,29 @@ function requestStatusLabel(status){return T(({new:'quoteNew',viewed:'quoteViewe
 function safeText(value,max=180){return String(value||'').trim().slice(0,max);}
 function normalize(value){return String(value||'').toLocaleLowerCase('pt-BR').normalize('NFD').replace(/\p{M}/gu,'');}
 const publicBase=()=>new URL('./',window.location.href);
+function updateIntentsInUrl(changes){
+  const url=new URL(window.location.href);
+  for(const [key,value] of Object.entries(changes)){
+    if(value===null)url.searchParams.delete(key);
+    else url.searchParams.set(key,value);
+  }
+  window.history.replaceState(null,'',url.pathname+url.search+url.hash);
+}
+function authRedirectUrl(){
+  const url=publicBase();
+  const current=new URL(window.location.href);
+  if(pendingProfessionalSignup||current.searchParams.get('cadastro')==='profissional'){
+    url.searchParams.set('cadastro','profissional');
+    url.hash='para-profissionais';
+  }else{
+    const profileId=pendingRequestProfessionalId||current.searchParams.get('profissional');
+    if(validProfileId(profileId)&&(pendingRequestProfessionalId||current.searchParams.get('pedido')==='1')){
+      url.searchParams.set('profissional',profileId);
+      url.searchParams.set('pedido','1');
+    }
+  }
+  return url.href;
+}
 const validProfileId=id=>/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(String(id||''));
 function publicProfileUrl(id){
   if(!validProfileId(id))return '';
@@ -151,7 +175,13 @@ async function searchProfessionals(){
 function openRequest(profileId){
   const profile=searchResults.find(item=>item.id===profileId);
   if(!profile)return;
-  if(!currentUser){pendingRequestProfessionalId=profileId;accountMessage.textContent=T('mustLogin');accountDialog.showModal();return;}
+  if(!currentUser){
+    pendingRequestProfessionalId=profileId;
+    updateIntentsInUrl({profissional:profileId,pedido:'1',cadastro:null});
+    accountMessage.textContent=T('mustLogin');
+    if(!accountDialog.open)accountDialog.showModal();
+    return;
+  }
   requestForm.reset();
   requestForm.elements.professionalId.value=profile.id;
   requestForm.elements.category.value=profile.category;
@@ -340,6 +370,9 @@ document.addEventListener('click',event=>{
 });
 document.querySelector('#register-professional').addEventListener('click',()=>{
   if(!currentUser){
+    pendingProfessionalSignup=true;
+    pendingRequestProfessionalId='';
+    updateIntentsInUrl({cadastro:'profissional',pedido:null,profissional:null});
     accountMessage.textContent=T('registerSignInHelp');
     if(!accountDialog.open)accountDialog.showModal();
   }else if(currentProfile){
@@ -425,7 +458,7 @@ document.querySelector('#sign-up').addEventListener('click',async()=>{
   if(!supabaseClient)return;const email=accountForm.elements.email.value.trim(),password=accountForm.elements.password.value;
   if(!email||password.length<8){accountMessage.textContent=T('signupInvalid');return;}
   const b=document.querySelector('#sign-up');b.disabled=true;accountMessage.textContent=T('creatingAccount');
-  try{const {data,error}=await supabaseClient.auth.signUp({email,password,options:{emailRedirectTo:new URL('./',window.location.href).href}});if(error)throw error;accountMessage.textContent=data.session?T('accountCreated'):T('confirmEmail');}
+  try{const {data,error}=await supabaseClient.auth.signUp({email,password,options:{emailRedirectTo:authRedirectUrl()}});if(error)throw error;accountMessage.textContent=data.session?T('accountCreated'):T('confirmEmail');}
   catch(error){accountMessage.textContent=authErrorText(error);}finally{b.disabled=false;}
 });
 document.querySelector('#reset-password').addEventListener('click',async()=>{
@@ -456,6 +489,35 @@ passwordForm.addEventListener('submit',async event=>{
   }finally{button.disabled=false;}
 });
 
+async function continuePendingIntent(){
+  if(!currentUser)return;
+  const url=new URL(window.location.href);
+  const candidate=pendingRequestProfessionalId||
+    (url.searchParams.get('pedido')==='1'?url.searchParams.get('profissional'):null);
+  if(validProfileId(candidate)){
+    if(!searchResults.some(p=>p.id===candidate)){
+      await loadSharedProfile();
+    }
+    if(!searchResults.some(p=>p.id===candidate)){
+      pendingRequestProfessionalId='';
+      updateIntentsInUrl({pedido:null});
+      return;
+    }
+    pendingRequestProfessionalId='';
+    updateIntentsInUrl({pedido:null});
+    if(accountDialog.open)accountDialog.close();
+    openRequest(candidate);
+    return;
+  }
+  if(pendingProfessionalSignup||url.searchParams.get('cadastro')==='profissional'){
+    pendingProfessionalSignup=false;
+    updateIntentsInUrl({cadastro:null});
+    if(accountDialog.open)accountDialog.close();
+    if(!currentProfile)openProfileEditor();
+    else profileBox.scrollIntoView({block:'center'});
+  }
+}
+
 async function initAuth(){
   if(!supabaseClient){updateAccountUi();renderProfile();renderRequestList();return;}
   let activeUserId=null;
@@ -464,7 +526,7 @@ async function initAuth(){
     document.querySelectorAll('[data-request-filter]').forEach(button=>{const active=button.dataset.requestFilter==='all';button.classList.toggle('active',active);button.setAttribute('aria-pressed',String(active));});
     updateAccountUi();
     if(user){
-      setTimeout(async()=>{await loadUserData();if(pendingRequestProfessionalId){const id=pendingRequestProfessionalId;pendingRequestProfessionalId='';accountDialog.close();openRequest(id);}},0);
+      setTimeout(async()=>{await loadUserData();if(currentUser?.id===user.id)await continuePendingIntent();},0);
     }else{renderProfile();renderRequestList();}
   };
   supabaseClient.auth.onAuthStateChange((event,s)=>setTimeout(()=>{
@@ -483,8 +545,8 @@ async function init(){
   await loadActiveCount();
   searchResults=[];resultsEl.innerHTML='<div class="empty-box"><strong>'+escapeHtml(T('initialSearch'))+'</strong><span>'+escapeHtml(T('onlyApproved'))+'</span></div>';
   document.querySelector('#invite-professional').href=professionalInviteUrl();
-  await initAuth();
   await loadSharedProfile();
+  await initAuth();
 }
 init();
 
