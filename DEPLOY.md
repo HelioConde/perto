@@ -1,22 +1,16 @@
 # Perto — migração para o repositório independente
 
-O código de produção está na branch **`split/perto`** do hub. **Não desenvolver na `main` de `ideias-ia-lab`**.
+O projeto agora está em **[`HelioConde/perto`, branch `main`](https://github.com/HelioConde/perto)**. A branch `split/perto` do hub foi mantida como cópia histórica.
 
-## 1. Criar o repositório físico
+## 1. Repositório independente — concluído
 
-A integração GitHub atual não disponibiliza o comando de criação de repositórios. Crie manualmente o repositório público **`HelioConde/perto`** em [github.com/new](https://github.com/new), **sem inicializar com README, .gitignore ou licença**.
+- [x] Repositório público [HelioConde/perto](https://github.com/HelioConde/perto) criado.
+- [x] Todos os 37 arquivos da branch `split/perto` importados em uma única migração para `main`.
+- [x] Comparação de SHA dos blobs entre origem e destino: 37/37 arquivos idênticos.
+- [x] Executados os primeiros workflows Static QA, Live Update QA e Live version no novo repositório.
+- [ ] Workflow GitHub Pages — aguarda ativação em Settings → Pages.
 
-No seu computador, com Git instalado:
-
-```powershell
-git clone --branch split/perto --single-branch https://github.com/HelioConde/ideias-ia-lab.git perto
-cd perto
-git branch -m main
-git remote set-url origin https://github.com/HelioConde/perto.git
-git push -u origin main
-```
-
-Isso migra a árvore standalone atual, mantendo todas as melhorias e as migrations da branch.
+O histórico de trabalho anterior continua preservado em `HelioConde/ideias-ia-lab` como backup. A partir desta publicação, desenvolvimento e CI devem acontecer **somente em `HelioConde/perto`**.
 
 ## 2. Habilitar publicação
 
@@ -48,7 +42,7 @@ Não divulgar como verificados: aprovação de conteúdo ainda não é validaç�
 - [x] PT-BR/EN com categorias persistindo o mesmo valor de banco;
 - [x] testes Browser E2E desktop/mobile versionados;
 - [x] workflow de publicação, sitemap, robots e páginas legais preparados;
-- [ ] repositório `HelioConde/perto` criado e main importada;
+- [x] repositório `HelioConde/perto` criado e main importada (37/37 arquivos idênticos);
 - [ ] CI da main e GitHub Pages verdes no novo repositório;
 - [ ] validação real: duas contas, navegador desktop/mobile, pedido, privacidade, cancelamento e aprovação;
 - [ ] canal de suporte/privacidade dedicado e revisão jurídica dos textos antes de abrir cadastro ao público;
