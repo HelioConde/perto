@@ -2,7 +2,7 @@
 
 Marketplace local moderado para encontrar profissionais ativos por cidade/categoria e encaminhar **pedidos privados de orçamento**.
 
-**Situação (12/10/2026):** MVP técnico preparado na branch `split/perto` do laboratório. As proteções de banco foram aplicadas ao `pizzaria-db` e os testes desktop/mobile são automatizados. O projeto **ainda não está publicado** num repositório físico próprio e **não deve receber cadastros públicos reais** antes de homologação.
+**Situação (13/10/2026):** repositório independente [`HelioConde/perto`](https://github.com/HelioConde/perto) criado e **37 arquivos importados para `main`**, com comparação de conteúdo idêntica à branch original. As proteções já estão aplicadas no Supabase `pizzaria-db`. Os testes estáticos foram aprovados no novo repositório. **GitHub Pages ainda precisa ser habilitado em Settings → Pages → Source: GitHub Actions**, e o produto não deve receber cadastros públicos reais antes da homologação.
 
 ## Recursos disponíveis
 
@@ -34,7 +34,7 @@ npm run test:e2e
 
 ## Próximos passos
 
-**[DEPLOY.md](DEPLOY.md)** — criar `HelioConde/perto`, migrar a branch, habilitar Pages, configurar redirect de autenticação e homologar com usuários reais.  
+**[DEPLOY.md](DEPLOY.md)** — repositório e importação concluídos; habilitar GitHub Pages, configurar redirect de autenticação e homologar com usuários reais.  
 **[RELEASE_V1.md](RELEASE_V1.md)** — relatório de segurança/escopo e pendências antes do beta público.  
 **[FULLSTACK.md](FULLSTACK.md)** — arquitetura do produto e roadmap.
 
