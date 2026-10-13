@@ -1062,10 +1062,11 @@ test('successful login clears a previously displayed confirmation notice',async(
 });
 
 
-async function prepareValidatedProfileForm(page){
+async function prepareValidatedProfileForm(page,english=false){
   const testUser={id:'11112222-3333-4444-8555-666677778888',email:'profissional-teste@example.test'};
   await installMock(page,{user:testUser,profiles:[]});
   await page.goto('/');
+  if(english)await page.locator('[data-perto-lang="en"]').click();
   await page.locator('#register-professional').click();
   await expect(page.locator('#profile-dialog')).toBeVisible();
   await page.locator('#profile-form [name="displayName"]').fill('Maria Serviços');
@@ -1127,8 +1128,7 @@ test('valid zero starting price still submits as integer cents',async({page})=>{
 });
 
 test('profile validation feedback follows the English language',async({page})=>{
-  await prepareValidatedProfileForm(page);
-  await page.locator('[data-perto-lang="en"]').click();
+  await prepareValidatedProfileForm(page,true);
   await page.locator('#profile-form [name="displayName"]').fill(' ');
   await page.locator('#profile-form [type="submit"]').click();
   await expect(page.locator('#profile-message')).toContainText('valid business name');
