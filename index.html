@@ -14,18 +14,24 @@
   <link rel="canonical" href="https://helioconde.github.io/perto/">
   <title>Perto — Profissionais e serviços por cidade</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="design-system.css">
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Pular para o conteúdo principal</a>
   <div class="shell">
     <header class="topbar">
       <a class="brand" href="./">Perto<span>.</span></a>
+      <nav class="primary-nav" aria-label="Navegação principal">
+        <a href="#search-panel" data-perto-text="navSearch">Buscar serviços</a>
+        <a href="#para-profissionais" data-perto-text="navProfessionals">Para profissionais</a>
+      </nav>
       <div class="top-actions">
         <span id="sync-status" class="sync-status" role="status" data-perto-text="searchStatus">Busca pública</span>
         <button id="account-open" class="button ghost" type="button" data-perto-text="signIn">Entrar</button>
       </div>
     </header>
 
-    <main>
+    <main id="main-content">
       <section class="hero">
         <div>
           <p class="eyebrow" data-perto-text="localEyebrow">SERVIÇOS LOCAIS</p>
@@ -44,7 +50,7 @@
         </aside>
       </section>
 
-      <section class="search-panel" id="search-panel">
+      <section class="search-panel" id="search-panel" aria-label="Filtros de busca">
         <div class="search-grid">
           <label class="field">
             <span data-perto-text="city">Cidade</span>
@@ -90,7 +96,7 @@
       <section class="results-section">
         <div class="section-heading">
           <div><p class="eyebrow" data-perto-text="resultsEyebrow">RESULTADOS</p><h2 data-perto-text="resultsTitle">Profissionais encontrados</h2></div>
-          <p id="result-summary" data-perto-text="searchToStart">Faça uma busca para começar.</p>
+          <p id="result-summary" role="status" aria-live="polite" data-perto-text="searchToStart">Faça uma busca para começar.</p>
         </div>
         <div id="search-share" class="search-share" hidden>
           <strong data-perto-text="shareSearchHeading">Compartilhe esta busca</strong>

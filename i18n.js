@@ -2,6 +2,7 @@
   'use strict';
   const pt = {
     pageTitle:'Perto — Profissionais e serviços por cidade', searchStatus:'Busca pública', signIn:'Entrar',
+    navSearch:'Buscar serviços',navProfessionals:'Para profissionais',
     localEyebrow:'SERVIÇOS LOCAIS', heroTitle:'Procure pelo serviço.<br><span>Converse com quem atende.</span>',
     heroCopy:'O Perto exibe somente perfis ativos no banco. Nenhum prestador fictício é inserido para preencher resultados.',
     activePros:'Profissionais ativos', available:'disponíveis no catálogo agora',
@@ -128,6 +129,7 @@
   };
   const en = {
     pageTitle:'Perto — Find local professionals',searchStatus:'Public search',signIn:'Sign in',
+    navSearch:'Find services',navProfessionals:'For professionals',
     localEyebrow:'LOCAL SERVICES',heroTitle:'Find the service.<br><span>Connect with a professional.</span>',
     heroCopy:'Perto displays only approved active profiles. We do not create fictional professionals to fill search results.',
     activePros:'Active professionals',available:'currently listed',

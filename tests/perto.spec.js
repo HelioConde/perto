@@ -1134,3 +1134,60 @@ test('profile validation feedback follows the English language',async({page})=>{
   await expect(page.locator('#profile-message')).toContainText('valid business name');
   expect(await page.evaluate(()=>window.__pertoTest.inserted)).toHaveLength(0);
 });
+
+
+// Visual QA uses only public pages and mocked professional listings.
+test('design: keyboard skip link, navigational landmarks and 44px primary controls',async({page})=>{
+  await installMock(page,{profiles:[]});
+  await page.goto('/');
+  const skip=page.locator('.skip-link');
+  await expect(skip).toHaveAttribute('href','#main-content');
+  await page.keyboard.press('Tab');
+  await expect(skip).toBeFocused();
+  await expect(page.locator('main#main-content')).toHaveCount(1);
+  await expect(page.locator('nav.primary-nav a')).toHaveCount(2);
+  await expect(page.locator('#search-panel')).toHaveAttribute('aria-label','Filtros de busca');
+  const heights=await page.locator('#account-open,#search-button,#register-professional').evaluateAll(elements=>elements.map(el=>el.getBoundingClientRect().height));
+  expect(heights.every(height=>height>=44)).toBe(true);
+  await page.locator('nav.primary-nav a[href="#para-profissionais"]').click();
+  expect(new URL(page.url()).hash).toBe('#para-profissionais');
+});
+
+test('design: language selector updates navigation and respects reduced motion',async({page})=>{
+  await installMock(page,{profiles:[]});
+  await page.goto('/');
+  await page.locator('[data-perto-lang="en"]').click();
+  await expect(page.locator('.primary-nav')).toContainText('Find services');
+  await expect(page.locator('.primary-nav')).toContainText('For professionals');
+  await page.emulateMedia({reducedMotion:'reduce'});
+  expect(await page.evaluate(()=>getComputedStyle(document.documentElement).scrollBehavior)).toBe('auto');
+});
+
+test('design: 320 to 1440px screens fit all public and admin pages',async({page})=>{
+  await page.route('https://cdn.jsdelivr.net/**',route=>route.abort());
+  for(const width of [320,390,768,1440]){
+    await page.setViewportSize({width,height:860});
+    for(const path of ['/','/convite.html','/privacidade.html','/termos.html','/admin.html']){
+      await page.goto(path);
+      const dims=await page.evaluate(()=>({
+        doc:document.documentElement.scrollWidth,
+        viewport:document.documentElement.clientWidth
+      }));
+      expect(dims.doc,path+' at '+width+'px: horizontal overflow').toBeLessThanOrEqual(dims.viewport+1);
+    }
+  }
+});
+
+test('design: capture home, invite, legal and moderation pages using safe fixtures',async({page},testInfo)=>{
+  await page.setViewportSize(testInfo.project.name==='mobile'?{width:390,height:844}:{width:1440,height:900});
+  await installMock(page,{profiles:[]});
+  for(const [path,name] of [['/','home'],['/convite.html','invite'],['/privacidade.html','privacy'],['/termos.html','terms'],['/admin.html','moderation']]){
+    await page.goto(path);
+    await expect(page.locator('main')).toBeVisible();
+    await page.screenshot({
+      path:testInfo.outputPath('design-'+name+'-'+testInfo.project.name+'.png'),
+      fullPage:true,
+      animations:'disabled'
+    });
+  }
+});

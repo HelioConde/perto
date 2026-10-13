@@ -209,3 +209,7 @@ Migração aplicada **somente** em `public.perto_professionals` no Supabase comp
 - Estado: uma das 27 UFs brasileiras.
 
 Essas regras também são verificadas no navegador, com mensagens compreensíveis, antes de inserir/atualizar linhas. Preços opcionais são limitados à faixa do tipo `integer` em centavos. **Zero cadastros existentes foram afetados; não houve alterações em outras tabelas do projeto compartilhado.**
+
+## 21. Design System e screenshots automáticos
+
+A camada design-system.css é carregada depois dos estilos históricos em todas as páginas. As decisões estão em DESIGN_SYSTEM.md. O workflow Perto MVP QA arquiva o artefato perto-design-screenshots, com dez PNGs: home, convite, privacidade, termos e área de moderação nos modos desktop e celular. As capturas não incluem dados ou sessões reais de usuários. Executar toda a suíte E2E e o QA estático antes de considerar a rodada visual publicada.

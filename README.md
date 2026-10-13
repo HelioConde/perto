@@ -111,3 +111,7 @@ Na primeira inscrição, se a conta precisar confirmar e-mail, há instruções 
 ## Validação dos primeiros cadastros reais
 
 Os perfis profissionais têm validação dupla: navegador (com mensagens PT-BR/EN) e **regras CHECK no PostgreSQL** para nome, cidade, UF, categoria e descrição. Espaços em branco não são tratados como anúncios válidos; os campos principais precisam ter conteúdo útil. O preço opcional é verificado antes do envio para não exceder a capacidade do campo integer de centavos. A categoria personalizada histórica de um perfil já existente continua sendo preservada quando editada. Nenhum profissional foi criado como parte desta migração.
+
+## Design v1.1 e auditoria visual
+
+As páginas compartilham tokens de cores, fontes, espaçamento e componentes no arquivo design-system.css, carregado após style.css e admin.css. O catálogo, convite, moderação e páginas legais continuam em HTML e CSS sem introduzir framework. Consulte DESIGN_SYSTEM.md para critérios e padrões. O Playwright verifica teclado, navegação PT/EN, controles >= 44px, movimento reduzido e largura sem overflow nas cinco páginas de 320 a 1440px. Screenshots em Chrome desktop/mobile são publicados no artefato perto-design-screenshots do workflow Perto MVP QA, usando somente fixtures de teste.
