@@ -392,7 +392,7 @@ async function loadUserData(){
   if(currentUser?.id!==owner)return;
   loadingAccount=false;
   if(profileResult.error)accountMessage.textContent=T('loadProfileFailed');
-  else currentProfile=profileResult.data||null;
+  else currentProfile=profileResult.data?{...profileResult.data}:null;
   if(requestsResult.error)accountMessage.textContent=T('loadRequestsFailed');
   else userRequests=requestsResult.data||[];
   updateAccountUi();renderProfile();renderRequestList();
