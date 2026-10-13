@@ -109,3 +109,20 @@ test('moderation queue stays private while signed out', async ({ page }) => {
   await page.locator('#admin-logout').click();
   await expect(page.locator('#admin-queue-area')).toBeHidden();
 });
+
+
+test('accessibility: moderator decision dialog passes WCAG and requires reason on rejection',async({page},testInfo)=>{
+  const AxeBuilder=require('@axe-core/playwright').default;
+  await mockAdmin(page,{moderator:true});
+  await page.goto('/admin.html');
+  await expect(page.locator('[data-review="rejected"]')).toBeVisible();
+  await page.locator('[data-review="rejected"]').click();
+  await expect(page.locator('#admin-decision-dialog')).toBeVisible();
+  await expect(page.locator('#admin-decision-form [name="reason"]')).toHaveAttribute('required','');
+  const results=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa']).analyze();
+  expect(results.violations.map(x=>({id:x.id,targets:x.nodes.map(n=>n.target)}))).toEqual([]);
+  await page.screenshot({path:testInfo.outputPath('dialog-moderation-'+testInfo.project.name+'.png'),animations:'disabled'});
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#admin-decision-dialog')).toBeHidden();
+  expect(await page.evaluate(()=>window.__pertoAdminTest.decisions)).toHaveLength(0);
+});

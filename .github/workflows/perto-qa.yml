@@ -40,7 +40,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: perto-design-screenshots
-          path: test-results/**/design-*.png
+          path: |
+            test-results/**/design-*.png
+            test-results/**/dialog-*.png
           if-no-files-found: warn
           retention-days: 14
       - name: Save failure details

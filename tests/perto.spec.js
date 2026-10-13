@@ -1223,3 +1223,62 @@ test('accessibility: localized skip links and legal language navigation',async({
     await expect(page).toHaveURL(/#english-version$/);
   }
 });
+
+
+// Audit actual open dialogs, rather than only the initial page with dialogs hidden.
+test('accessibility: sign-in dialog passes WCAG checks and returns focus on Escape',async({page},testInfo)=>{
+  const AxeBuilder=require('@axe-core/playwright').default;
+  await installMock(page,{profiles:[]});
+  await page.goto('/');
+  await page.locator('#account-open').click();
+  await expect(page.locator('#account-dialog')).toBeVisible();
+  const results=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa']).analyze();
+  expect(results.violations.map(x=>({id:x.id,targets:x.nodes.map(n=>n.target)}))).toEqual([]);
+  await page.screenshot({path:testInfo.outputPath('dialog-signin-'+testInfo.project.name+'.png'),animations:'disabled'});
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#account-dialog')).toBeHidden();
+  await expect(page.locator('#account-open')).toBeFocused();
+});
+
+test('accessibility: professional editor dialog passes WCAG and preserves input on Escape',async({page},testInfo)=>{
+  const AxeBuilder=require('@axe-core/playwright').default;
+  const user={id:'dddddddd-dddd-4ddd-8ddd-dddddddddddd',email:'profissional@example.test'};
+  await installMock(page,{user,profiles:[]});
+  await page.goto('/');
+  await page.locator('#register-professional').click();
+  await expect(page.locator('#profile-dialog')).toBeVisible();
+  const results=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa']).analyze();
+  expect(results.violations.map(x=>({id:x.id,targets:x.nodes.map(n=>n.target)}))).toEqual([]);
+  await page.locator('#profile-form [name="displayName"]').fill('Prestador Exemplo');
+  await page.screenshot({path:testInfo.outputPath('dialog-provider-'+testInfo.project.name+'.png'),animations:'disabled'});
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#profile-dialog')).toBeHidden();
+  expect(await page.evaluate(()=>window.__pertoTest.inserted)).toHaveLength(0);
+});
+
+test('accessibility: quote request dialog passes WCAG on desktop and mobile',async({page},testInfo)=>{
+  const AxeBuilder=require('@axe-core/playwright').default;
+  const user={id:'dddddddd-dddd-4ddd-8ddd-dddddddddddd',email:'cliente@example.test'};
+  await installMock(page,{user,profiles:[activeProfile]});
+  await page.goto('/?profissional='+activeProfile.id);
+  await expect(page.locator('.professional-card')).toHaveCount(1);
+  await page.locator('[data-request]').click();
+  await expect(page.locator('#request-dialog')).toBeVisible();
+  const results=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa']).analyze();
+  expect(results.violations.map(x=>({id:x.id,targets:x.nodes.map(n=>n.target)}))).toEqual([]);
+  await page.screenshot({path:testInfo.outputPath('dialog-quote-'+testInfo.project.name+'.png'),animations:'disabled'});
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#request-dialog')).toBeHidden();
+  expect(await page.evaluate(()=>window.__pertoTest.inserted)).toHaveLength(0);
+});
+
+test('accessibility: password recovery dialog is reachable and passes WCAG checks',async({page},testInfo)=>{
+  const AxeBuilder=require('@axe-core/playwright').default;
+  await installMock(page,{profiles:[]});
+  await page.goto('/');
+  await page.evaluate(()=>window.__pertoTest.authCallback('PASSWORD_RECOVERY',{user:{id:'dddddddd-dddd-4ddd-8ddd-dddddddddddd',email:'teste@example.test'}}));
+  await expect(page.locator('#password-dialog')).toBeVisible();
+  const results=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa']).analyze();
+  expect(results.violations.map(x=>({id:x.id,targets:x.nodes.map(n=>n.target)}))).toEqual([]);
+  await page.screenshot({path:testInfo.outputPath('dialog-password-'+testInfo.project.name+'.png'),animations:'disabled'});
+});
