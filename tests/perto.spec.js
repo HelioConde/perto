@@ -425,3 +425,98 @@ test('five recent quotes trigger a localized hourly limit message', async ({ pag
   const count = await page.evaluate(() => window.__pertoTest.requests.length);
   expect(count).toBe(5);
 });
+
+
+test('shared professional link opens only an approved active profile', async ({ page }) => {
+  await installMock(page, { profiles: [activeProfile, pendingProfile] });
+  await page.goto('/?profissional='+activeProfile.id);
+  await expect(page.locator('.professional-card')).toHaveCount(1);
+  await expect(page.locator('.professional-card')).toContainText('Ana Eletricista');
+  await expect(page.locator('#results')).not.toContainText('Perfil ainda pendente');
+  await expect(page.locator('#result-summary')).toContainText('1 profissional');
+  await expect(page.locator('.professional-card [data-request]')).toBeVisible();
+  await expect(page.locator('.professional-card .share-profile')).toHaveAttribute('target','_blank');
+});
+
+test('a pending or withdrawn professional cannot be opened with a shared URL', async ({ page }) => {
+  await installMock(page, { profiles: [activeProfile, pendingProfile] });
+  await page.goto('/?profissional='+pendingProfile.id);
+  await expect(page.locator('.professional-card')).toHaveCount(0);
+  await expect(page.locator('#result-summary')).toContainText('não está disponível');
+  await expect(page.locator('#results')).not.toContainText('Perfil ainda pendente');
+});
+
+test('malformed or malicious shared ids cannot expose a profile', async ({ page }) => {
+  await installMock(page);
+  await page.goto('/?profissional=%3Cscript%3E');
+  await expect(page.locator('.professional-card')).toHaveCount(0);
+  await expect(page.locator('#toast')).toContainText('Link de profissional inválido');
+  await expect(page.locator('#results')).not.toContainText('<script>');
+});
+
+test('profile cards share only their public link via WhatsApp and a copyable URL', async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator,'clipboard',{
+      configurable: true,
+      value: { writeText: async text => { window.__copiedProfileLink = text; } }
+    });
+  });
+  await installMock(page);
+  await page.goto('/');
+  await page.locator('#search-button').click();
+  const expected=new URL('/?profissional='+activeProfile.id,page.url()).href;
+  const whatsapp=page.locator('.professional-card .share-profile');
+  const shareLink=await whatsapp.getAttribute('href');
+  const message=new URL(shareLink).searchParams.get('text');
+  expect(message).toContain('Ana Eletricista');
+  expect(message).toContain(expected);
+  expect(message).not.toContain('cliente@example.test');
+  await page.locator('.professional-card [data-copy-profile]').click();
+  await expect.poll(() => page.evaluate(() => window.__copiedProfileLink)).toBe(expected);
+  await expect(page.locator('#toast')).toContainText('Link do perfil copiado');
+});
+
+test('approved provider has profile sharing, pending provider does not', async ({ page }) => {
+  const user={id:activeProfile.user_id,email:'prestador@example.test'};
+  await installMock(page,{user,profiles:[activeProfile]});
+  await page.goto('/');
+  await expect(page.locator('#professional-profile [data-copy-profile]')).toBeVisible();
+  const href=await page.locator('#professional-profile [data-copy-profile]').getAttribute('href');
+  expect(href).toContain('?profissional='+activeProfile.id);
+});
+
+test('provider invitation is available from empty searches without fake listings', async ({ page }) => {
+  await installMock(page, { profiles: [] });
+  await page.goto('/');
+  await page.locator('#search-button').click();
+  await expect(page.locator('.professional-card')).toHaveCount(0);
+  const invite=page.locator('.invite-inline');
+  await expect(invite).toBeVisible();
+  const href=await invite.getAttribute('href');
+  expect(new URL(href).searchParams.get('text')).toContain('#para-profissionais');
+  await page.locator('#register-professional').click();
+  await expect(page.locator('#account-dialog')).toBeVisible();
+  await expect(page.locator('#account-message')).toContainText('Entre ou crie uma conta');
+});
+
+test('manually searching replaces a specific shared profile with normal filters', async ({ page }) => {
+  await installMock(page);
+  await page.goto('/?profissional='+activeProfile.id);
+  await expect(page.locator('.professional-card')).toHaveCount(1);
+  await page.locator('#city').fill('Cidade que não existe');
+  await page.locator('#search-button').click();
+  await expect(page.locator('.professional-card')).toHaveCount(0);
+  expect(new URL(page.url()).searchParams.has('profissional')).toBe(false);
+});
+
+test('provider invitation and public share actions are available in English', async ({ page }) => {
+  await installMock(page);
+  await page.goto('/');
+  await page.locator('[data-perto-lang="en"]').click();
+  await expect(page.locator('#recruit-title')).toHaveText('Help customers discover your work.');
+  await expect(page.locator('#register-professional')).toHaveText('List my service');
+  await page.locator('#search-button').click();
+  await expect(page.locator('.professional-card .share-profile')).toHaveText('Share on WhatsApp');
+  const message=new URL(await page.locator('.professional-card .share-profile').getAttribute('href')).searchParams.get('text');
+  expect(message).toContain('Meet Ana Eletricista');
+});

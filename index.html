@@ -8,6 +8,8 @@
   <meta property="og:title" content="Perto — Profissionais e serviços por cidade">
   <meta property="og:description" content="Busque profissionais ativos, compare informações públicas e envie um pedido privado.">
   <meta property="og:type" content="website">
+  <meta property="og:locale" content="pt_BR">
+  <meta name="robots" content="index,follow,max-image-preview:large">
   <meta property="og:url" content="https://helioconde.github.io/perto/">
   <link rel="canonical" href="https://helioconde.github.io/perto/">
   <title>Perto — Profissionais e serviços por cidade</title>
@@ -29,6 +31,10 @@
           <p class="eyebrow" data-perto-text="localEyebrow">SERVIÇOS LOCAIS</p>
           <h1 data-perto-html="heroTitle">Procure pelo serviço.<br><span>Converse com quem atende.</span></h1>
           <p class="hero-copy" data-perto-text="heroCopy">O Perto exibe somente perfis ativos no banco. Nenhum prestador fictício é inserido para preencher resultados.</p>
+          <div class="hero-actions">
+            <a class="button primary" href="#search-panel" data-perto-text="findYourProfessional">Encontrar profissional</a>
+            <a class="button ghost" href="#para-profissionais" data-perto-text="offerYourService">Sou profissional</a>
+          </div>
         </div>
         <aside class="hero-card">
           <span data-perto-text="activePros">Profissionais ativos</span>
@@ -37,7 +43,7 @@
         </aside>
       </section>
 
-      <section class="search-panel">
+      <section class="search-panel" id="search-panel">
         <div class="search-grid">
           <label class="field">
             <span data-perto-text="city">Cidade</span>
@@ -85,6 +91,24 @@
           <p id="result-summary" data-perto-text="searchToStart">Faça uma busca para começar.</p>
         </div>
         <div id="results" class="results"></div>
+      </section>
+
+      <section class="recruit-section" id="para-profissionais" aria-labelledby="recruit-title">
+        <div class="recruit-content">
+          <p class="eyebrow" data-perto-text="recruitEyebrow">PARA QUEM PRESTA SERVIÇOS</p>
+          <h2 id="recruit-title" data-perto-text="recruitTitle">Seu trabalho merece ser encontrado.</h2>
+          <p data-perto-text="recruitCopy">Cadastre seu serviço gratuitamente durante o beta. Após aprovação, compartilhe seu perfil com clientes pelo WhatsApp. Não prometemos clientes ou posicionamento nos resultados.</p>
+          <div class="recruit-actions">
+            <button type="button" class="button primary" id="register-professional" data-perto-text="registerFree">Cadastrar meu serviço</button>
+            <a id="invite-professional" class="button ghost" href="https://wa.me/" target="_blank" rel="noopener noreferrer" data-perto-text="inviteProfessional">Convidar um profissional</a>
+          </div>
+          <small data-perto-text="recruitDisclosure">Perfis novos passam por moderação antes de aparecer na busca. Nenhum pagamento é exigido para se cadastrar no beta.</small>
+        </div>
+        <div class="recruit-steps">
+          <div><span>01</span><strong data-perto-text="recruitStep1">Crie sua conta</strong></div>
+          <div><span>02</span><strong data-perto-text="recruitStep2">Cadastre o serviço e aguarde a revisão</strong></div>
+          <div><span>03</span><strong data-perto-text="recruitStep3">Compartilhe seu perfil aprovado</strong></div>
+        </div>
       </section>
 
       <section class="account-area">

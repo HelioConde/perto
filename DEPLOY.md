@@ -128,3 +128,12 @@ A nova tela de alteração de senha reage ao evento `PASSWORD_RECOVERY` e utiliz
 - [ ] Completar suporte/LGPD antes de aceitar inscrições públicas.
 
 **Regressão de segurança:** 42 testes Chromium desktop/mobile aprovados em https://github.com/HelioConde/ideias-ia-lab/actions/runs/38342657126, incluindo bloqueio de auto-orçamento e limite por hora.
+
+## 12. Aquisição orgânica — perfis compartilháveis e convite de prestadores
+
+- O dono de um perfil `active` pode compartilhar o link da ficha pública da homepage (`?profissional=UUID`) ou copiá-lo. O card público também permite compartilhamento por WhatsApp.
+- Uma visita à URL com `profissional=UUID` executa consulta ao Supabase com filtros `status=active` e `id=UUID`; IDs malformados e perfis não aprovados não retornam os dados do profissional.
+- Esta versão não cria páginas SEO por cidade nem gera resultados fictícios. O HTML da página tem metadados gerais da home e as prévias sociais de links individuais são **genéricas** (não personalizadas por perfil).
+- A seção de convite explica que não existe promessa de clientes; quem compartilha escolhe voluntariamente abrir o WhatsApp. Nenhum marketing de disparo automático foi incluído.
+- Verificar com usuários reais o fluxo: profissional cadastra → moderação aprova → profissional compartilha → cliente abre link → login → orçamento.
+- Validar com 1 cidade piloto e categorias com oferta real, sem criar páginas doorway, e verificar textos LGPD e canal de contato antes de campanha de tráfego público.

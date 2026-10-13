@@ -40,6 +40,58 @@ function statusLabel(status){return T(({pending:'statePending',active:'stateActi
 function requestStatusLabel(status){return T(({new:'quoteNew',viewed:'quoteViewed',contacted:'quoteContacted',closed:'quoteClosed',cancelled:'quoteCancelled'})[status]||status);}
 function safeText(value,max=180){return String(value||'').trim().slice(0,max);}
 function normalize(value){return String(value||'').toLocaleLowerCase('pt-BR').normalize('NFD').replace(/\p{M}/gu,'');}
+const publicBase=()=>new URL('./',window.location.href);
+const validProfileId=id=>/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(String(id||''));
+function publicProfileUrl(id){
+  if(!validProfileId(id))return '';
+  const url=publicBase();
+  url.searchParams.set('profissional',id);
+  return url.href;
+}
+function whatsappUrl(message){return 'https://wa.me/?text='+encodeURIComponent(message);}
+function profileShareUrl(profile){
+  return whatsappUrl(T('shareProfessionalText',{name:profile.display_name,category:profile.category,city:profile.city,state:profile.state,url:publicProfileUrl(profile.id)}));
+}
+function professionalInviteUrl(){
+  const url=publicBase();url.hash='para-profissionais';
+  return whatsappUrl(T('inviteProfessionalText',{url:url.href}));
+}
+function shareActions(profile){
+  const link=publicProfileUrl(profile.id);
+  if(!link)return '';
+  return '<div class="profile-share-links">'+
+    '<a class="share-profile" href="'+escapeHtml(profileShareUrl(profile))+'" target="_blank" rel="noopener noreferrer">'+escapeHtml(T('shareWhatsApp'))+'</a>'+
+    '<a class="copy-profile" href="'+escapeHtml(link)+'" data-copy-profile="'+escapeHtml(profile.id)+'">'+escapeHtml(T('copyProfileLink'))+'</a></div>';
+}
+async function copyProfileLink(id){
+  const link=publicProfileUrl(id);if(!link)return;
+  try{
+    if(!navigator.clipboard?.writeText)throw new Error('clipboard unavailable');
+    await navigator.clipboard.writeText(link);
+    showToast(T('profileLinkCopied'));
+  }catch(error){
+    window.prompt(T('copyLinkPrompt'),link);
+  }
+}
+async function loadSharedProfile(){
+  const id=new URL(window.location.href).searchParams.get('profissional');
+  if(!id)return;
+  if(!validProfileId(id)){showToast(T('invalidSharedProfile'));return;}
+  if(!supabaseClient){showToast(T('searchUnavailable'));return;}
+  try{
+    const {data,error}=await supabaseClient.from('perto_professionals')
+      .select('id,display_name,city,state,category,description,price_from_cents,rating,status')
+      .eq('status','active').eq('id',id).limit(1);
+    if(error)throw error;
+    searchResults=data||[];
+    renderResults();
+    if(!searchResults.length)document.querySelector('#result-summary').textContent=T('sharedProfileUnavailable');
+    document.querySelector('#results').scrollIntoView({block:'start'});
+  }catch(error){
+    console.error(error);
+    resultsEl.innerHTML='<div class="empty-box error"><strong>'+escapeHtml(T('searchFailedTitle'))+'</strong><span>'+escapeHtml(T('tryAgain'))+'</span></div>';
+  }
+}
 
 async function loadActiveCount(){
   if(!supabaseClient)return;
@@ -53,20 +105,25 @@ function professionalCard(profile){
     '<div class="professional-top"><div><strong>'+escapeHtml(profile.display_name)+'</strong><span>'+escapeHtml(profile.category)+'</span></div>'+rating+'</div>'+
     '<p>'+escapeHtml(profile.description||'')+'</p>'+
     '<div class="professional-meta"><span>⌖ '+escapeHtml(profile.city)+'/'+escapeHtml(profile.state)+'</span><span>'+escapeHtml(T('from'))+' '+escapeHtml(money(profile.price_from_cents))+'</span></div>'+
-    '<button class="button primary full" type="button" data-request="'+escapeHtml(profile.id)+'">'+escapeHtml(T('requestQuote'))+'</button>'+
+    '<button class="button primary full" type="button" data-request="'+escapeHtml(profile.id)+'">'+escapeHtml(T('requestQuote'))+'</button>'+shareActions(profile)+
   '</article>';
 }
 
 function renderResults(){
   resultsEl.innerHTML=searchResults.length
     ?searchResults.map(professionalCard).join('')
-    :'<div class="empty-box"><strong>'+escapeHtml(T('noProfessionals'))+'</strong><span>'+escapeHtml(T('noProfessionalsHelp'))+'</span></div>';
+    :'<div class="empty-box"><strong>'+escapeHtml(T('noProfessionals'))+'</strong><span>'+escapeHtml(T('noProfessionalsHelp'))+'</span><a class="button ghost invite-inline" href="'+escapeHtml(professionalInviteUrl())+'" target="_blank" rel="noopener noreferrer">'+escapeHtml(T('inviteProfessional'))+'</a></div>';
   document.querySelector('#result-summary').textContent=searchResults.length
     ?T('professionalsFound',{count:searchResults.length})
     :T('noResults');
 }
 
 async function searchProfessionals(){
+  const url=new URL(window.location.href);
+  if(url.searchParams.has('profissional')){
+    url.searchParams.delete('profissional');
+    window.history.replaceState(null,'',url.pathname+url.search+url.hash);
+  }
   if(!supabaseClient){showToast(T('searchUnavailable'));return;}
   const button=document.querySelector('#search-button');button.disabled=true;
   document.querySelector('#result-summary').textContent=T('searching');
@@ -157,7 +214,8 @@ function renderProfile(){
     '<div class="profile-head"><div><strong>'+escapeHtml(currentProfile.display_name)+'</strong><span>'+escapeHtml(currentProfile.category)+' · '+escapeHtml(currentProfile.city)+'/'+escapeHtml(currentProfile.state)+'</span></div><span class="profile-status '+escapeHtml(currentProfile.status)+'">'+escapeHtml(statusLabel(currentProfile.status))+'</span></div>'+
     '<p>'+escapeHtml(currentProfile.description||'')+'</p>'+
     '<div class="profile-price">'+escapeHtml(T('profileCost'))+' <strong>'+escapeHtml(money(currentProfile.price_from_cents))+'</strong></div>'+
-    '<button class="button ghost full" type="button" data-edit-profile>'+escapeHtml(T('editProfile'))+'</button>'+
+    '<button class="button ghost full" type="button" data-edit-profile>'+escapeHtml(T('editProfile'))+'</button>'+ 
+    (currentProfile.status==='active'?shareActions(currentProfile):'')+
     (currentProfile.status==='pending'?'<small class="moderation-note">'+escapeHtml(T('awaitingModeration'))+'</small>':'')+
   '</article>';
 }
@@ -276,6 +334,18 @@ document.querySelector('#request-filters').addEventListener('click',event=>{
 document.querySelector('#search-button').addEventListener('click',searchProfessionals);
 [cityInput,stateSelect,categorySelect,termInput].forEach(el=>el.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();searchProfessionals();}}));
 resultsEl.addEventListener('click',event=>{const b=event.target.closest('[data-request]');if(b)openRequest(b.dataset.request);});
+document.addEventListener('click',event=>{
+  const copy=event.target.closest('[data-copy-profile]');
+  if(copy){event.preventDefault();copyProfileLink(copy.dataset.copyProfile);}
+});
+document.querySelector('#register-professional').addEventListener('click',()=>{
+  if(!currentUser){
+    accountMessage.textContent=T('registerSignInHelp');
+    if(!accountDialog.open)accountDialog.showModal();
+  }else if(currentProfile){
+    profileBox.scrollIntoView({block:'center'});
+  }else{openProfileEditor();}
+});
 
 document.querySelector('#request-close').addEventListener('click',()=>requestDialog.close());
 requestDialog.addEventListener('click',e=>{if(e.target===requestDialog)requestDialog.close();});
@@ -412,7 +482,9 @@ async function init(){
   updateAccountUi();renderProfile();renderRequestList();
   await loadActiveCount();
   searchResults=[];resultsEl.innerHTML='<div class="empty-box"><strong>'+escapeHtml(T('initialSearch'))+'</strong><span>'+escapeHtml(T('onlyApproved'))+'</span></div>';
+  document.querySelector('#invite-professional').href=professionalInviteUrl();
   await initAuth();
+  await loadSharedProfile();
 }
 init();
 
@@ -421,6 +493,7 @@ window.addEventListener('perto:language-change',()=>{
   updateAccountUi();
   renderProfile();
   renderRequestList();
+  document.querySelector('#invite-professional').href=professionalInviteUrl();
   if(searchResults.length)renderResults();
   else if(resultsEl.querySelector('.empty-box') && resultsEl.textContent.includes('Busque por cidade ou categoria.')){
     resultsEl.innerHTML='<div class="empty-box"><strong>'+escapeHtml(T('initialSearch'))+'</strong><span>'+escapeHtml(T('onlyApproved'))+'</span></div>';

@@ -64,3 +64,24 @@
 
 /* Author display utilities must not override browser-level hidden state. */
 [hidden]{display:none!important}
+
+
+/* Organic discovery: practical paths for customers and invited providers. */
+.hero-actions,.recruit-actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:21px}
+.hero-actions .button,.recruit-actions .button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;text-align:center}
+.profile-share-links{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-top:11px}
+.profile-share-links a{display:inline-flex;justify-content:center;align-items:center;flex:1;min-height:42px;padding:8px 11px;border:1px solid var(--line);border-radius:9px;color:var(--accent);font-size:12px;font-weight:700;background:var(--soft);text-align:center}
+.profile-share-links a:hover{background:#dbece0}
+.profile-share-links a:focus-visible,.recruit-actions a:focus-visible,.hero-actions a:focus-visible,.invite-inline:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.empty-box .invite-inline{display:inline-flex;justify-content:center;align-items:center;min-height:44px;margin-top:4px}
+.recruit-section{scroll-margin-top:18px;display:grid;grid-template-columns:minmax(0,1.5fr) minmax(240px,.8fr);align-items:center;gap:26px;margin:4px 0 38px;padding:30px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(110deg,var(--soft),#fff);box-shadow:var(--shadow)}
+.recruit-section h2{margin:0;font:800 clamp(24px,3.6vw,36px)/1.17 Manrope,sans-serif;letter-spacing:-1.2px}
+.recruit-section p:not(.eyebrow){max-width:690px;color:#56685a;line-height:1.65;font-size:14px}
+.recruit-section small{display:block;max-width:640px;margin-top:14px;color:var(--muted);line-height:1.5;font-size:11px}
+.recruit-steps{display:grid;gap:11px}
+.recruit-steps>div{display:flex;align-items:center;gap:13px;padding:15px 12px;background:#fff;border:1px solid var(--line);border-radius:12px}
+.recruit-steps span{font:800 16px Manrope,sans-serif;color:var(--accent)}
+.recruit-steps strong{font-size:12px;line-height:1.4}
+#results{scroll-margin-top:22px}
+@media(max-width:880px){.recruit-section{grid-template-columns:1fr}.recruit-steps{grid-template-columns:repeat(3,minmax(0,1fr))}.recruit-steps>div{align-items:flex-start;flex-direction:column}}
+@media(max-width:580px){.hero-actions,.recruit-actions{align-items:stretch;flex-direction:column}.hero-actions .button,.recruit-actions .button{width:100%}.recruit-section{padding:20px 16px;margin-bottom:25px}.recruit-steps{grid-template-columns:1fr}.recruit-steps>div{flex-direction:row}.profile-share-links{flex-direction:column}.profile-share-links a{width:100%}}

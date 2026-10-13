@@ -75,6 +75,20 @@
     statePending:'Em análise',stateActive:'Ativo',statePaused:'Pausado',stateRejected:'Não aprovado',
     quoteNew:'Novo',quoteViewed:'Visualizado',quoteContacted:'Contato realizado',
     quoteClosed:'Encerrado',quoteCancelled:'Cancelado',
+    findYourProfessional:'Encontrar profissional',offerYourService:'Sou profissional',
+    recruitEyebrow:'PARA QUEM PRESTA SERVIÇOS',recruitTitle:'Seu trabalho merece ser encontrado.',
+    recruitCopy:'Cadastre seu serviço gratuitamente durante o beta. Após aprovação, compartilhe seu perfil com clientes pelo WhatsApp. Não prometemos clientes ou posicionamento nos resultados.',
+    registerFree:'Cadastrar meu serviço',inviteProfessional:'Convidar um profissional',
+    recruitDisclosure:'Novos perfis passam por revisão antes de aparecer na busca. O cadastro no beta é gratuito.',
+    recruitStep1:'Crie sua conta',recruitStep2:'Cadastre seu serviço e aguarde a revisão',
+    recruitStep3:'Compartilhe seu perfil aprovado',
+    shareWhatsApp:'Compartilhar no WhatsApp',copyProfileLink:'Copiar link',
+    profileLinkCopied:'Link do perfil copiado!',copyLinkPrompt:'Copie o link do seu perfil:',
+    shareProfessionalText:'Conheça {name}, profissional de {category} em {city}/{state}, no Perto: {url}',
+    inviteProfessionalText:'Você presta serviços? Cadastre seu perfil gratuitamente no Perto (sujeito a aprovação): {url}',
+    sharedProfileUnavailable:'Este perfil não está disponível para consulta pública.',
+    invalidSharedProfile:'Link de profissional inválido.',
+    registerSignInHelp:'Entre ou crie uma conta para cadastrar seu serviço.',
     language:'Idioma da interface'
   };
   const en = {
@@ -151,7 +165,22 @@
     authError:'Could not continue. Check your details and try again.',
     statePending:'Pending review',stateActive:'Active',statePaused:'Paused',stateRejected:'Rejected',
     quoteNew:'New',quoteViewed:'Viewed',quoteContacted:'Contacted',
-    quoteClosed:'Closed',quoteCancelled:'Cancelled',language:'Interface language'
+    quoteClosed:'Closed',quoteCancelled:'Cancelled',
+    findYourProfessional:'Find a professional',offerYourService:'I am a professional',
+    recruitEyebrow:'FOR SERVICE PROVIDERS',recruitTitle:'Help customers discover your work.',
+    recruitCopy:'List your service for free during beta. After approval, share your profile on WhatsApp. We do not promise customers or search rankings.',
+    registerFree:'List my service',inviteProfessional:'Invite a professional',
+    recruitDisclosure:'New profiles are moderated before appearing in search. Registration is free during beta.',
+    recruitStep1:'Create your account',recruitStep2:'List your service and wait for review',
+    recruitStep3:'Share your approved profile',
+    shareWhatsApp:'Share on WhatsApp',copyProfileLink:'Copy link',
+    profileLinkCopied:'Profile link copied!',copyLinkPrompt:'Copy your profile link:',
+    shareProfessionalText:'Meet {name}, {category} professional in {city}/{state}, on Perto: {url}',
+    inviteProfessionalText:'Do you offer services? List your profile free on Perto (subject to approval): {url}',
+    sharedProfileUnavailable:'This profile is not publicly available.',
+    invalidSharedProfile:'Invalid professional link.',
+    registerSignInHelp:'Sign in or create an account to list your service.',
+    language:'Interface language'
   };
   const all = { 'pt-BR': pt, en };
   let lang = localStorage.getItem('perto-language') === 'en' ? 'en' : 'pt-BR';
