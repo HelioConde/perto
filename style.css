@@ -85,3 +85,6 @@
 #results{scroll-margin-top:22px}
 @media(max-width:880px){.recruit-section{grid-template-columns:1fr}.recruit-steps{grid-template-columns:repeat(3,minmax(0,1fr))}.recruit-steps>div{align-items:flex-start;flex-direction:column}}
 @media(max-width:580px){.hero-actions,.recruit-actions{align-items:stretch;flex-direction:column}.hero-actions .button,.recruit-actions .button{width:100%}.recruit-section{padding:20px 16px;margin-bottom:25px}.recruit-steps{grid-template-columns:1fr}.recruit-steps>div{flex-direction:row}.profile-share-links{flex-direction:column}.profile-share-links a{width:100%}}
+
+/* Guided provider registration, shared canonical categories. */
+.field-hint{display:block;margin-top:5px;color:var(--muted);font-size:11px;line-height:1.5}

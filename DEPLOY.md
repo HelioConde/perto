@@ -146,3 +146,15 @@ A nova tela de alteração de senha reage ao evento `PASSWORD_RECOVERY` e utiliz
 - O `redirectTo` de recuperação de senha continua apontando ao endereço base da aplicação.
 - Testes automáticos em navegador (mock de autenticação) concluíram com **68 aprovações** na execução [38363431044](https://github.com/HelioConde/perto/actions/runs/38363431044).
 - **Atenção:** antes de convidar prestadores reais, autorizar `https://helioconde.github.io/perto/**` em Supabase Auth → URL Configuration → Redirect URLs e homologar confirmação por e-mail/recuperação com contas reais.
+
+## 14. Checklist de aquisição orgânica após a primeira auditoria real (13/10/2026)
+
+O banco compartilhado tinha **zero profissionais cadastrados e zero pedidos** no momento da consulta. Portanto, a prioridade é aquisição piloto, não SEO massivo.
+
+1. Escolher **uma cidade e duas categorias** em que exista oferta real.
+2. Fazer 5 a 20 convites **manuais e consentidos** a profissionais, usando a busca vazia com filtros preenchidos. O link de convite retém apenas cidade, UF e categoria, com UF e categoria validadas.
+3. Ajudar cada profissional a completar o cadastro. O status é pending até um moderador autorizado aprová-lo; não prometer aprovação automática.
+4. Testar uma conta de cliente distinta, abrindo perfil público aprovado, autenticando e enviando pedido. Auditar a privacidade entre contas.
+5. Medir profissionais aprovados, visitantes interessados e solicitações reais; só então considerar páginas locais com conteúdo original. Não fabricar anúncios ou avaliações.
+
+**Redirecionamentos:** o projeto bnlvvsjgpywpbfhwdcan é compartilhado. Em [Supabase → Authentication → URL Configuration](https://supabase.com/dashboard/project/bnlvvsjgpywpbfhwdcan/auth/url-configuration), adicionar a URL base https://helioconde.github.io/perto/ e, para permitir parâmetros do fluxo, o padrão https://helioconde.github.io/perto/**. Não alterar a Site URL global. Confirmar que o template de e-mail padrão usa o link de confirmação que respeita redirectTo. A integração atual não permite ler ou alterar esta lista; marcar como pendente até homologar com e-mail real. Referência: https://supabase.com/docs/guides/auth/redirect-urls.

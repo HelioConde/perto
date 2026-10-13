@@ -61,3 +61,15 @@ Para consultar a checklist de publicação/autenticação e limites do MVP, veja
 - Nenhum pedido ou perfil é criado automaticamente: o usuário precisa preencher e enviar o formulário.
 - A recuperação de senha segue para o endereço base, sem carregar redirecionamentos de terceiros.
 - **QA do onboarding:** 68 testes Playwright aprovados em [Perto MVP QA](https://github.com/HelioConde/perto/actions/runs/38363431044), incluindo retornos de confirmação, proteção de links e fluxo em dispositivos móveis.
+
+## Primeiro público: aquisição local com formulário guiado
+
+**Verificação do banco em 13/10/2026:** ainda não havia profissionais cadastrados (nenhum status na tabela) nem pedidos de orçamento. Não anunciar uma comunidade ativa antes de ter cadastros reais.
+
+- A categoria do perfil agora é uma **lista de valores canônicos** igual à busca, incluindo “Outros serviços”. Isso impede diferenças de digitação que fariam o prestador não aparecer no filtro correto.
+- Um resultado vazio com cidade, UF ou categoria selecionadas oferece um convite voluntário por WhatsApp com esses **critérios não pessoais** no link; não envia mensagens sozinho.
+- O profissional convidado conserva cidade, estado e categoria ao se cadastrar, inclusive após confirmação do e-mail, e precisa finalizar o formulário antes de qualquer perfil ser criado.
+- Categorias históricas fora da lista ainda podem ser editadas sem perda de informação.
+- A versão pública continua sem anúncios falsos ou páginas artificiais para cidades vazias.
+- O Supabase deste projeto é **compartilhado** com outros produtos. Não alterar o Site URL global. Verificar manualmente [Auth → URL Configuration](https://supabase.com/dashboard/project/bnlvvsjgpywpbfhwdcan/auth/url-configuration) e adicionar o endereço base do Perto e um padrão limitado à rota /perto/ que aceite o query string de cadastro.
+- O conector atual não expõe a lista de Redirect URLs configurada; **não há confirmação de que estejam autorizadas**. Um teste com e-mail real é obrigatório antes de uma campanha.

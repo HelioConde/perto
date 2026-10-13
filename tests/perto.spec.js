@@ -198,7 +198,7 @@ test('professional signup creates a pending, moderated profile', async ({ page }
   await page.locator('#profile-form [name="displayName"]').fill('Maria Reparos');
   await page.locator('#profile-form [name="city"]').fill('Goiânia');
   await page.locator('#profile-form [name="state"]').selectOption('GO');
-  await page.locator('#profile-form [name="category"]').fill('Eletricista');
+  await page.locator('#profile-form [name="category"]').selectOption('Eletricista');
   await page.locator('#profile-form [name="description"]').fill('Instalação e manutenção elétrica residencial');
   await page.locator('#profile-form [name="priceFrom"]').fill('125');
   await page.locator('#profile-form [type="submit"]').click();
@@ -598,4 +598,88 @@ test('maliciously invented intent parameters are stripped from confirmation redi
   await page.locator('#sign-up').click();
   const signup=await page.evaluate(() => window.__pertoTest.authCalls.find(x=>x.type==='signUp'));
   expect(signup.options.options.emailRedirectTo).toBe('http://127.0.0.1:4179/');
+});
+
+
+test('provider registration uses canonical categories shared with discovery, including others', async ({ page }) => {
+  const fresh={id:'89898989-8989-4898-8898-898989898989',email:'prestadora@example.test'};
+  await installMock(page,{user:fresh,profiles:[activeProfile]});
+  await page.goto('/');
+  await page.locator('#register-professional').click();
+  await expect(page.locator('#profile-dialog')).toBeVisible();
+  await page.locator('#profile-form [name="displayName"]').fill('Nina Serviços');
+  await page.locator('#profile-form [name="city"]').fill('Campinas');
+  await page.locator('#profile-form [name="state"]').selectOption('SP');
+  await page.locator('#profile-form [name="category"]').selectOption('Outros serviços');
+  await page.locator('#profile-form [name="description"]').fill('Serviços que não se encaixam nas outras categorias');
+  await page.locator('#profile-form [type="submit"]').click();
+  await expect(page.locator('#profile-dialog')).toBeHidden();
+  const inserted=await page.evaluate(()=>window.__pertoTest.inserted.find(x=>x.table==='perto_professionals'));
+  expect(inserted.payload.category).toBe('Outros serviços');
+  await page.locator('#category').selectOption('Outros serviços');
+  await expect(page.locator('#category')).toHaveValue('Outros serviços');
+});
+
+test('empty regional search generates an opt-in invite with category city and state', async ({ page }) => {
+  await installMock(page,{profiles:[]});
+  await page.goto('/');
+  await page.locator('#city').fill('Campinas');
+  await page.locator('#state').selectOption('SP');
+  await page.locator('#category').selectOption('Eletricista');
+  await page.locator('#search-button').click();
+  await expect(page.locator('.professional-card')).toHaveCount(0);
+  const href=await page.locator('.invite-inline').getAttribute('href');
+  const text=new URL(href).searchParams.get('text');
+  expect(text).toContain('Campinas');
+  expect(text).toContain('Eletricista');
+  const matched=text.match(/https?:\/\/[^\s]+/);
+  expect(matched).not.toBeNull();
+  const invited=new URL(matched[0]);
+  expect(invited.searchParams.get('cadastro')).toBe('profissional');
+  expect(invited.searchParams.get('cidade')).toBe('Campinas');
+  expect(invited.searchParams.get('uf')).toBe('SP');
+  expect(invited.searchParams.get('categoria')).toBe('Eletricista');
+});
+
+test('invited provider retains valid city and category after confirmation and fills profile intentionally', async ({ page }) => {
+  const fresh={id:'90909090-9090-4909-8909-909090909090',email:'convidada@example.test'};
+  await installMock(page,{loginUser:fresh,profiles:[]});
+  await page.goto('/?cadastro=profissional&cidade=Campinas&uf=SP&categoria=Eletricista#para-profissionais');
+  await page.locator('#register-professional').click();
+  await expect(page.locator('#account-dialog')).toBeVisible();
+  await page.locator('#auth-form [name="email"]').fill('convidada@example.test');
+  await page.locator('#auth-form [name="password"]').fill('senha-forte-123');
+  await page.locator('#sign-up').click();
+  const signUp=await page.evaluate(()=>window.__pertoTest.authCalls.find(x=>x.type==='signUp'));
+  const redirect=new URL(signUp.options.options.emailRedirectTo);
+  expect(redirect.searchParams.get('cidade')).toBe('Campinas');
+  expect(redirect.searchParams.get('uf')).toBe('SP');
+  expect(redirect.searchParams.get('categoria')).toBe('Eletricista');
+  await page.locator('#auth-form button[type="submit"]').click();
+  await expect(page.locator('#profile-dialog')).toBeVisible();
+  await expect(page.locator('#profile-form [name="city"]')).toHaveValue('Campinas');
+  await expect(page.locator('#profile-form [name="state"]')).toHaveValue('SP');
+  await expect(page.locator('#profile-form [name="category"]')).toHaveValue('Eletricista');
+  const inserted=await page.evaluate(()=>window.__pertoTest.inserted.filter(x=>x.table==='perto_professionals'));
+  expect(inserted).toHaveLength(0);
+});
+
+test('malicious referral values do not become a selected state or category', async ({ page }) => {
+  const fresh={id:'91919191-9191-4919-8919-919191919191',email:'verificada@example.test'};
+  await installMock(page,{user:fresh,profiles:[]});
+  await page.goto('/?cadastro=profissional&cidade=Campinas&uf=XX&categoria=%3Cscript%3E');
+  await expect(page.locator('#profile-dialog')).toBeVisible();
+  await expect(page.locator('#profile-form [name="city"]')).toHaveValue('Campinas');
+  await expect(page.locator('#profile-form [name="state"]')).toHaveValue('');
+  await expect(page.locator('#profile-form [name="category"]')).toHaveValue('');
+  await expect(page.locator('#profile-form')).not.toContainText('<script>');
+});
+
+test('editing a legacy professional category remains possible', async ({ page }) => {
+  const old={...activeProfile,category:'Restauração de móveis',status:'active'};
+  await installMock(page,{user:{id:old.user_id,email:'antigo@example.test'},profiles:[old]});
+  await page.goto('/');
+  await page.locator('[data-edit-profile]').click();
+  await expect(page.locator('#profile-form [name="category"]')).toHaveValue('Restauração de móveis');
+  await expect(page.locator('#profile-form [name="category"] option[value="Restauração de móveis"]')).toHaveCount(1);
 });

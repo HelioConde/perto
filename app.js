@@ -50,11 +50,34 @@ function updateIntentsInUrl(changes){
   }
   window.history.replaceState(null,'',url.pathname+url.search+url.hash);
 }
+function referralContext(source){
+  const city=safeText(source.city,100);
+  const state=String(source.state||'').toUpperCase();
+  const category=String(source.category||'');
+  const validState=Array.from(stateSelect.options).some(item=>item.value===state&&state!=='');
+  const validCategory=Array.from(categorySelect.options).some(item=>item.value===category&&category!=='');
+  return {city,state:validState?state:'',category:validCategory?category:''};
+}
+function referralFromUrl(){
+  const params=new URL(window.location.href).searchParams;
+  return referralContext({city:params.get('cidade'),state:params.get('uf'),category:params.get('categoria')});
+}
+function referralFromSearch(){
+  return referralContext({city:cityInput.value,state:stateSelect.value,category:categorySelect.value});
+}
+function addReferralToUrl(url,context){
+  const values=referralContext(context);
+  if(values.city)url.searchParams.set('cidade',values.city);
+  if(values.state)url.searchParams.set('uf',values.state);
+  if(values.category)url.searchParams.set('categoria',values.category);
+  return url;
+}
 function authRedirectUrl(){
   const url=publicBase();
   const current=new URL(window.location.href);
   if(pendingProfessionalSignup||current.searchParams.get('cadastro')==='profissional'){
     url.searchParams.set('cadastro','profissional');
+    addReferralToUrl(url,referralFromUrl());
     url.hash='para-profissionais';
   }else{
     const profileId=pendingRequestProfessionalId||current.searchParams.get('profissional');
@@ -76,9 +99,18 @@ function whatsappUrl(message){return 'https://wa.me/?text='+encodeURIComponent(m
 function profileShareUrl(profile){
   return whatsappUrl(T('shareProfessionalText',{name:profile.display_name,category:profile.category,city:profile.city,state:profile.state,url:publicProfileUrl(profile.id)}));
 }
-function professionalInviteUrl(){
-  const url=publicBase();url.hash='para-profissionais';
-  return whatsappUrl(T('inviteProfessionalText',{url:url.href}));
+function professionalInviteUrl(context={}){
+  const url=publicBase();
+  const values=referralContext(context);
+  const focus=[values.category,values.city,values.state].filter(Boolean).join(' · ');
+  if(focus){
+    url.searchParams.set('cadastro','profissional');
+    addReferralToUrl(url,values);
+  }
+  url.hash='para-profissionais';
+  return whatsappUrl(focus
+    ?T('inviteLocalProfessionalText',{focus,url:url.href})
+    :T('inviteProfessionalText',{url:url.href}));
 }
 function shareActions(profile){
   const link=publicProfileUrl(profile.id);
@@ -136,7 +168,7 @@ function professionalCard(profile){
 function renderResults(){
   resultsEl.innerHTML=searchResults.length
     ?searchResults.map(professionalCard).join('')
-    :'<div class="empty-box"><strong>'+escapeHtml(T('noProfessionals'))+'</strong><span>'+escapeHtml(T('noProfessionalsHelp'))+'</span><a class="button ghost invite-inline" href="'+escapeHtml(professionalInviteUrl())+'" target="_blank" rel="noopener noreferrer">'+escapeHtml(T('inviteProfessional'))+'</a></div>';
+    :'<div class="empty-box"><strong>'+escapeHtml(T('noProfessionals'))+'</strong><span>'+escapeHtml(T('noProfessionalsHelp'))+'</span><a class="button ghost invite-inline" href="'+escapeHtml(professionalInviteUrl(referralFromSearch()))+'" target="_blank" rel="noopener noreferrer">'+escapeHtml(T('inviteProfessional'))+'</a></div>';
   document.querySelector('#result-summary').textContent=searchResults.length
     ?T('professionalsFound',{count:searchResults.length})
     :T('noResults');
@@ -257,11 +289,29 @@ function openProfileEditor(){
     profileForm.elements.displayName.value=currentProfile.display_name||'';
     profileForm.elements.city.value=currentProfile.city||'';
     profileForm.elements.state.value=currentProfile.state||'';
-    profileForm.elements.category.value=currentProfile.category||'';
+    const previousCategory=currentProfile.category||'';
+    if(previousCategory&&!Array.from(profileForm.elements.category.options).some(option=>option.value===previousCategory)){
+      const legacyOption=document.createElement('option');
+      legacyOption.value=previousCategory;
+      legacyOption.textContent=previousCategory;
+      legacyOption.dataset.legacy='true';
+      profileForm.elements.category.append(legacyOption);
+    }
+    profileForm.elements.category.value=previousCategory;
     profileForm.elements.description.value=currentProfile.description||'';
     profileForm.elements.priceFrom.value=currentProfile.price_from_cents==null?'':(Number(currentProfile.price_from_cents)/100).toFixed(2);
     document.querySelector('#profile-title').textContent=T('editProfile');
   }else{
+    const invited=referralFromUrl();
+    const searched=referralFromSearch();
+    const values={
+      city:invited.city||searched.city,
+      state:invited.state||searched.state,
+      category:invited.category||searched.category
+    };
+    profileForm.elements.city.value=values.city;
+    profileForm.elements.state.value=values.state;
+    profileForm.elements.category.value=values.category;
     document.querySelector('#profile-title').textContent=T('createProfile');
   }
   profileMessage.textContent='';
@@ -372,7 +422,16 @@ document.querySelector('#register-professional').addEventListener('click',()=>{
   if(!currentUser){
     pendingProfessionalSignup=true;
     pendingRequestProfessionalId='';
-    updateIntentsInUrl({cadastro:'profissional',pedido:null,profissional:null});
+    const initial=referralFromUrl(),chosen=referralFromSearch();
+    const values={
+      city:initial.city||chosen.city,
+      state:initial.state||chosen.state,
+      category:initial.category||chosen.category
+    };
+    updateIntentsInUrl({
+      cadastro:'profissional',pedido:null,profissional:null,
+      cidade:values.city||null,uf:values.state||null,categoria:values.category||null
+    });
     accountMessage.textContent=T('registerSignInHelp');
     if(!accountDialog.open)accountDialog.showModal();
   }else if(currentProfile){

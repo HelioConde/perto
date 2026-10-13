@@ -75,6 +75,7 @@
               <option value="Aulas" data-perto-text="categoryLessons">Aulas</option>
               <option value="Informática" data-perto-text="categoryIT">Informática</option>
               <option value="Serviços domésticos" data-perto-text="categoryHome">Serviços domésticos</option>
+              <option value="Outros serviços" data-perto-text="categoryOther">Outros serviços</option>
             </select>
           </label>
           <label class="field search-term">
@@ -181,7 +182,19 @@
           <option>SP</option><option>SE</option><option>TO</option>
         </select></label>
       </div>
-      <label class="field"><span data-perto-text="category">Categoria</span><input name="category" maxlength="100" required placeholder="Ex.: Eletricista"></label>
+      <label class="field"><span data-perto-text="category">Categoria</span><select name="category" required>
+          <option value="" data-perto-text="select">Selecione</option>
+          <option value="Eletricista" data-perto-text="categoryElectrician">Eletricista</option>
+          <option value="Encanador" data-perto-text="categoryPlumber">Encanador</option>
+          <option value="Montador" data-perto-text="categoryFurniture">Montador</option>
+          <option value="Diarista" data-perto-text="categoryCleaner">Diarista</option>
+          <option value="Reformas" data-perto-text="categoryRenovation">Reformas</option>
+          <option value="Beleza" data-perto-text="categoryBeauty">Beleza</option>
+          <option value="Aulas" data-perto-text="categoryLessons">Aulas</option>
+          <option value="Informática" data-perto-text="categoryIT">Informática</option>
+          <option value="Serviços domésticos" data-perto-text="categoryHome">Serviços domésticos</option>
+          <option value="Outros serviços" data-perto-text="categoryOther">Outros serviços</option>
+        </select><small class="field-hint" data-perto-text="categoryHint">Escolha a categoria principal. Descreva especialidades no campo abaixo.</small></label>
       <label class="field"><span data-perto-text="serviceDescription">Descrição do serviço</span><textarea name="description" maxlength="1200" required data-perto-placeholder="descriptionExample" placeholder="Descreva o que você faz e sua área de atendimento."></textarea></label>
       <label class="field"><span data-perto-text="priceFrom">Preço a partir de (opcional)</span><input name="priceFrom" type="number" min="0" step="0.01" data-perto-placeholder="priceExample" placeholder="Ex.: 80"></label>
       <button class="button primary full" type="submit" data-perto-text="saveProfile">Salvar perfil</button>
