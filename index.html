@@ -159,7 +159,7 @@
     </footer>
   </div>
 
-  <dialog id="request-dialog" class="dialog" aria-labelledby="request-title">
+  <dialog id="request-dialog" class="dialog" aria-labelledby="request-title" aria-describedby="request-professional">
     <div class="dialog-head">
       <div><p class="eyebrow" data-perto-text="quoteEyebrow">PEDIDO DE ORÇAMENTO</p><h2 id="request-title" data-perto-text="quoteTitle">Falar com profissional</h2></div>
       <button id="request-close" class="icon-button" type="button" aria-label="Fechar" data-perto-aria="close">×</button>
@@ -176,12 +176,12 @@
     </form>
   </dialog>
 
-  <dialog id="profile-dialog" class="dialog" aria-labelledby="profile-title">
+  <dialog id="profile-dialog" class="dialog" aria-labelledby="profile-title" aria-describedby="profile-dialog-help">
     <div class="dialog-head">
       <div><p class="eyebrow" data-perto-text="profileEyebrow">PERFIL PROFISSIONAL</p><h2 id="profile-title" data-perto-text="createProfile">Cadastrar serviço</h2></div>
       <button id="profile-close" class="icon-button" type="button" aria-label="Fechar" data-perto-aria="close">×</button>
     </div>
-    <p class="dialog-copy" data-perto-html="moderationCopy">Novos perfis entram como <strong>pendentes</strong> e não aparecem publicamente até moderação.</p>
+    <p id="profile-dialog-help" class="dialog-copy" data-perto-html="moderationCopy">Novos perfis entram como <strong>pendentes</strong> e não aparecem publicamente até moderação.</p>
     <p id="profile-review-hint" class="profile-review-hint" hidden></p>
     <form id="profile-form">
       <label class="field"><span data-perto-text="professionalName">Nome profissional</span><input name="displayName" maxlength="120" required data-perto-placeholder="nameExample" placeholder="Ex.: João Elétrica"></label>
@@ -218,12 +218,12 @@
     </form>
   </dialog>
 
-  <dialog id="account-dialog" class="dialog account-dialog" aria-labelledby="account-title">
+  <dialog id="account-dialog" class="dialog account-dialog" aria-labelledby="account-title" aria-describedby="account-dialog-help">
     <div class="dialog-head">
       <div><p class="eyebrow" data-perto-text="accountEyebrow">SUA CONTA</p><h2 id="account-title" data-perto-text="accountTitle">Entrar no Perto</h2></div>
       <button id="account-close" class="icon-button" type="button" aria-label="Fechar" data-perto-aria="close">×</button>
     </div>
-    <p class="dialog-copy" data-perto-text="accountCopy">A busca pública não exige conta. Conta é necessária para enviar pedidos ou cadastrar perfil profissional.</p>
+    <p id="account-dialog-help" class="dialog-copy" data-perto-text="accountCopy">A busca pública não exige conta. Conta é necessária para enviar pedidos ou cadastrar perfil profissional.</p>
     <form id="auth-form">
       <label class="field"><span data-perto-text="email">E-mail</span><input name="email" type="email" autocomplete="email" required></label>
       <label class="field"><span data-perto-text="password">Senha</span><input name="password" type="password" minlength="8" autocomplete="current-password" required></label>
@@ -246,12 +246,12 @@
     </div>
   </dialog>
 
-  <dialog id="password-dialog" class="dialog account-dialog" aria-labelledby="password-title">
+  <dialog id="password-dialog" class="dialog account-dialog" aria-labelledby="password-title" aria-describedby="password-dialog-help">
     <div class="dialog-head">
       <div><p class="eyebrow" data-perto-text="passwordRecoveryEyebrow">RECUPERAÇÃO DE CONTA</p><h2 id="password-title" data-perto-text="newPasswordTitle">Criar nova senha</h2></div>
       <button id="password-close" class="icon-button" type="button" aria-label="Fechar" data-perto-aria="close">×</button>
     </div>
-    <p class="dialog-copy" data-perto-text="newPasswordHelp">Escolha uma nova senha com pelo menos 8 caracteres.</p>
+    <p id="password-dialog-help" class="dialog-copy" data-perto-text="newPasswordHelp">Escolha uma nova senha com pelo menos 8 caracteres.</p>
     <form id="new-password-form">
       <label class="field"><span data-perto-text="newPassword">Nova senha</span><input name="password" type="password" minlength="8" autocomplete="new-password" required></label>
       <label class="field"><span data-perto-text="confirmNewPassword">Confirmar senha</span><input name="confirmPassword" type="password" minlength="8" autocomplete="new-password" required></label>

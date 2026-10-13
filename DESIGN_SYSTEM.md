@@ -65,3 +65,7 @@ Testes simulados e screenshots não substituem cadastro com e-mail real, permiss
 Incluímos auditoria axe-core (WCAG 2.0/2.1 A e AA) via Playwright em Chromium nas cinco entradas: home, convite, termos, privacidade e moderação. A navegação para a seção English das páginas legais evita percorrer todo o texto português. Links de pular conteúdo são traduzidos em home e convite e os destinos de foco têm `tabindex=-1`.
 
 O teste automatizado detecta parte dos problemas, mas não substitui auditorias manuais com leitor de tela, teclado, zoom e contraste em dispositivos reais.
+
+## Diálogos explicáveis por leitor de tela
+
+Além de títulos nomeados por `aria-labelledby`, as janelas de login, perfil profissional, orçamento, recuperação de senha e moderação agora relacionam explicitamente o contexto de cada formulário por `aria-describedby`. A associação é verificada no Playwright para todas as cinco janelas nos projetos desktop e mobile. Esse refinamento melhora a leitura de contexto, mas a homologação completa com leitor de tela real permanece uma etapa manual.

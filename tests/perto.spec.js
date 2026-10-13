@@ -1234,6 +1234,7 @@ test('accessibility: sign-in dialog passes WCAG checks and returns focus on Esca
   await expect(page.locator('#account-dialog')).toBeVisible();
   const results=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa']).analyze();
   expect(results.violations.map(x=>({id:x.id,targets:x.nodes.map(n=>n.target)}))).toEqual([]);
+  await expect(page.locator('#account-dialog')).toHaveAttribute('aria-describedby','account-dialog-help');
   await page.screenshot({path:testInfo.outputPath('dialog-signin-'+testInfo.project.name+'.png'),animations:'disabled'});
   await page.keyboard.press('Escape');
   await expect(page.locator('#account-dialog')).toBeHidden();
@@ -1250,6 +1251,7 @@ test('accessibility: professional editor dialog passes WCAG and preserves input 
   const results=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa']).analyze();
   expect(results.violations.map(x=>({id:x.id,targets:x.nodes.map(n=>n.target)}))).toEqual([]);
   await page.locator('#profile-form [name="displayName"]').fill('Prestador Exemplo');
+  await expect(page.locator('#profile-dialog')).toHaveAttribute('aria-describedby','profile-dialog-help');
   await page.screenshot({path:testInfo.outputPath('dialog-provider-'+testInfo.project.name+'.png'),animations:'disabled'});
   await page.keyboard.press('Escape');
   await expect(page.locator('#profile-dialog')).toBeHidden();
@@ -1266,6 +1268,7 @@ test('accessibility: quote request dialog passes WCAG on desktop and mobile',asy
   await expect(page.locator('#request-dialog')).toBeVisible();
   const results=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa']).analyze();
   expect(results.violations.map(x=>({id:x.id,targets:x.nodes.map(n=>n.target)}))).toEqual([]);
+  await expect(page.locator('#request-dialog')).toHaveAttribute('aria-describedby','request-professional');
   await page.screenshot({path:testInfo.outputPath('dialog-quote-'+testInfo.project.name+'.png'),animations:'disabled'});
   await page.keyboard.press('Escape');
   await expect(page.locator('#request-dialog')).toBeHidden();
@@ -1280,5 +1283,6 @@ test('accessibility: password recovery dialog is reachable and passes WCAG check
   await expect(page.locator('#password-dialog')).toBeVisible();
   const results=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa']).analyze();
   expect(results.violations.map(x=>({id:x.id,targets:x.nodes.map(n=>n.target)}))).toEqual([]);
+  await expect(page.locator('#password-dialog')).toHaveAttribute('aria-describedby','password-dialog-help');
   await page.screenshot({path:testInfo.outputPath('dialog-password-'+testInfo.project.name+'.png'),animations:'disabled'});
 });

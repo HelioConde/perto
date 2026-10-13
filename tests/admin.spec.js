@@ -121,6 +121,7 @@ test('accessibility: moderator decision dialog passes WCAG and requires reason o
   await expect(page.locator('#admin-decision-form [name="reason"]')).toHaveAttribute('required','');
   const results=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa']).analyze();
   expect(results.violations.map(x=>({id:x.id,targets:x.nodes.map(n=>n.target)}))).toEqual([]);
+  await expect(page.locator('#admin-decision-dialog')).toHaveAttribute('aria-describedby','admin-decision-profile');
   await page.screenshot({path:testInfo.outputPath('dialog-moderation-'+testInfo.project.name+'.png'),animations:'disabled'});
   await page.keyboard.press('Escape');
   await expect(page.locator('#admin-decision-dialog')).toBeHidden();
