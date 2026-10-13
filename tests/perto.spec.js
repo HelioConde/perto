@@ -308,7 +308,7 @@ test('email signup and reset links return to the Perto origin and path', async (
   await page.locator('#auth-form [name="email"]').fill('cliente@example.test');
   await page.locator('#auth-form [name="password"]').fill('senha-segura-123');
   await page.locator('#sign-up').click();
-  await expect(page.locator('#account-message')).toContainText('Confirme seu e-mail');
+  await expect(page.locator('#account-message')).toContainText('Cadastro solicitado');
   await page.locator('#reset-password').click();
   await expect(page.locator('#account-message')).toContainText('link de recuperação');
   const calls = await page.evaluate(() => window.__pertoTest.authCalls);
