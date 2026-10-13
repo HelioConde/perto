@@ -158,3 +158,12 @@ O banco compartilhado tinha **zero profissionais cadastrados e zero pedidos** no
 5. Medir profissionais aprovados, visitantes interessados e solicitações reais; só então considerar páginas locais com conteúdo original. Não fabricar anúncios ou avaliações.
 
 **Redirecionamentos:** o projeto bnlvvsjgpywpbfhwdcan é compartilhado. Em [Supabase → Authentication → URL Configuration](https://supabase.com/dashboard/project/bnlvvsjgpywpbfhwdcan/auth/url-configuration), adicionar a URL base https://helioconde.github.io/perto/ e, para permitir parâmetros do fluxo, o padrão https://helioconde.github.io/perto/**. Não alterar a Site URL global. Confirmar que o template de e-mail padrão usa o link de confirmação que respeita redirectTo. A integração atual não permite ler ou alterar esta lista; marcar como pendente até homologar com e-mail real. Referência: https://supabase.com/docs/guides/auth/redirect-urls.
+
+
+## 15. Landing page pública de convite
+
+- Nova página convite.html, com Open Graph e conteúdo honesto para prestadores no beta.
+- convite.js aceita exclusivamente cidade textual limitada, UF brasileira válida e categoria existente, monta o link de cadastro na home e só abre WhatsApp após clique.
+- O sinal de cadastro profissional e abertura automática da autenticação representa um CTA explícito. A abertura automática é descartada antes do e-mail de confirmação; a intenção de cadastrar profissional, cidade, UF e categoria seguem para permitir retomada legítima.
+- Páginas de perfis continuam somente com consulta pública aos perfis ativos, sem alegar SEO individual pré-renderizado.
+- Antes da campanha, testar o cadastro e a confirmação em duas contas reais, a moderação e o pedido de orçamento. O projeto Supabase compartilhado ainda exige configuração/validação da allowlist de redirecionamentos.

@@ -498,7 +498,7 @@ test('provider invitation is available from empty searches without fake listings
   const invite=page.locator('.invite-inline');
   await expect(invite).toBeVisible();
   const href=await invite.getAttribute('href');
-  expect(new URL(href).searchParams.get('text')).toContain('#para-profissionais');
+  expect(new URL(href).searchParams.get('text')).toContain('/convite.html');
   await page.locator('#register-professional').click();
   await expect(page.locator('#account-dialog')).toBeVisible();
   await expect(page.locator('#account-message')).toContainText('Entre ou crie uma conta');
@@ -635,7 +635,8 @@ test('empty regional search generates an opt-in invite with category city and st
   const matched=text.match(/https?:\/\/[^\s]+/);
   expect(matched).not.toBeNull();
   const invited=new URL(matched[0]);
-  expect(invited.searchParams.get('cadastro')).toBe('profissional');
+  expect(invited.pathname).toBe('/convite.html');
+  expect(invited.searchParams.has('cadastro')).toBe(false);
   expect(invited.searchParams.get('cidade')).toBe('Campinas');
   expect(invited.searchParams.get('uf')).toBe('SP');
   expect(invited.searchParams.get('categoria')).toBe('Eletricista');
@@ -682,4 +683,71 @@ test('editing a legacy professional category remains possible', async ({ page })
   await page.locator('[data-edit-profile]').click();
   await expect(page.locator('#profile-form [name="category"]')).toHaveValue('Restauração de móveis');
   await expect(page.locator('#profile-form [name="category"] option[value="Restauração de móveis"]')).toHaveCount(1);
+});
+
+
+test('provider invitation landing has a share-friendly title and a transparent beta explanation', async ({ page }) => {
+  await page.goto('/convite.html');
+  await expect(page).toHaveTitle('Divulgue seu serviço gratuitamente | Perto');
+  await expect(page.locator('meta[property="og:title"]')).toHaveAttribute('content', /Cadastre seu serviço/);
+  await expect(page.locator('#convite-register')).toHaveAttribute('href', /cadastro=profissional/);
+  await expect(page.locator('main')).toContainText('Não garantimos clientes');
+  await expect(page.locator('#convite-focus')).toBeHidden();
+});
+
+test('invitation landing transfers approved city state and category without exposing visitor details', async ({ page }) => {
+  await page.goto('/convite.html?cidade=Campinas&uf=SP&categoria=Eletricista');
+  await expect(page.locator('#convite-focus')).toBeVisible();
+  await expect(page.locator('#convite-focus')).toContainText('Campinas');
+  await expect(page.locator('#convite-focus')).toContainText('Eletricista');
+  const href=await page.locator('#convite-register').getAttribute('href');
+  const destination=new URL(href,page.url());
+  expect(destination.pathname).toBe('/');
+  expect(destination.searchParams.get('cadastro')).toBe('profissional');
+  expect(destination.searchParams.get('abrir')).toBe('1');
+  expect(destination.searchParams.get('cidade')).toBe('Campinas');
+  expect(destination.searchParams.get('uf')).toBe('SP');
+  expect(destination.searchParams.get('categoria')).toBe('Eletricista');
+  const forward=await page.locator('#convite-share').getAttribute('href');
+  const message=new URL(forward).searchParams.get('text');
+  expect(message).toContain('Campinas');
+  expect(message).toContain('convite.html');
+});
+
+test('invitation landing disregards unknown state category and untrusted HTML', async ({ page }) => {
+  await page.goto('/convite.html?cidade=%3Cimg%20src=x%20onerror=alert(1)%3E&uf=XX&categoria=%3Cscript%3E');
+  const dest=new URL(await page.locator('#convite-register').getAttribute('href'),page.url());
+  expect(dest.searchParams.get('uf')).toBeNull();
+  expect(dest.searchParams.get('categoria')).toBeNull();
+  expect(await page.locator('#convite-focus').locator('img,script').count()).toBe(0);
+  const msg=await page.locator('#convite-focus').textContent();
+  expect(msg).not.toContain('<img');
+});
+
+test('explicit invitation registration opens signup directly and retains the correct city and category', async ({ page }) => {
+  await installMock(page,{profiles:[]});
+  await page.goto('/convite.html?cidade=Campinas&uf=SP&categoria=Eletricista');
+  await page.locator('#convite-register').click();
+  await expect(page.locator('#account-dialog')).toBeVisible();
+  await expect(page.locator('#account-message')).toContainText('Entre ou crie uma conta');
+  await expect(page.locator('#profile-dialog')).toBeHidden();
+  expect(new URL(page.url()).searchParams.get('abrir')).toBeNull();
+  await page.locator('#auth-form [name="email"]').fill('convidado@example.test');
+  await page.locator('#auth-form [name="password"]').fill('senha-forte-123');
+  await page.locator('#sign-up').click();
+  const signup=await page.evaluate(()=>window.__pertoTest.authCalls.find(x=>x.type==='signUp'));
+  const redirect=new URL(signup.options.options.emailRedirectTo);
+  expect(redirect.searchParams.get('cidade')).toBe('Campinas');
+  expect(redirect.searchParams.get('uf')).toBe('SP');
+  expect(redirect.searchParams.get('categoria')).toBe('Eletricista');
+});
+
+test('invitation landing supports English and keeps consent-based contact only', async ({ page }) => {
+  await page.goto('/convite.html?lang=en&cidade=Boston&uf=MA&categoria=Eletricista');
+  await expect(page.locator('html')).toHaveAttribute('lang','en');
+  await expect(page.locator('#convite-title')).toContainText('Help people discover your services');
+  await expect(page.locator('#convite-register')).toContainText('List my service');
+  const url=new URL(await page.locator('#convite-register').getAttribute('href'),page.url());
+  expect(url.searchParams.get('lang')).toBeNull();
+  expect(url.searchParams.get('cidade')).toBe('Boston');
 });

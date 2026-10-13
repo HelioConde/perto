@@ -88,3 +88,33 @@
 
 /* Guided provider registration, shared canonical categories. */
 .field-hint{display:block;margin-top:5px;color:var(--muted);font-size:11px;line-height:1.5}
+
+
+/* Standalone invitation landing: useful WhatsApp preview and low-friction registration. */
+.invite-page{padding:44px 0 18px}
+.invite-hero{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(285px,.75fr);gap:42px;align-items:center;padding:20px 0 42px}
+.invite-hero h1{margin:0;max-width:780px;font:800 clamp(34px,5.3vw,64px)/1.09 Manrope,sans-serif;letter-spacing:-2.4px}
+.invite-lead{max-width:650px;color:#58685c;font-size:17px;line-height:1.7;margin:22px 0}
+.invite-focus{width:fit-content;max-width:100%;border:1px solid #b8d8c2;background:#e5f3e9;border-radius:10px;color:var(--accent-dark);padding:10px 13px;overflow-wrap:anywhere;font-size:13px;font-weight:700}
+.invite-actions{display:flex;align-items:center;flex-wrap:wrap;gap:11px;margin:21px 0 16px}
+.invite-actions .button{display:inline-flex;align-items:center;justify-content:center;min-height:46px}
+.invite-disclosure{max-width:600px;color:var(--muted);font-size:12px;line-height:1.65}
+.invite-benefits{background:#fff;border:1px solid var(--line);border-radius:19px;padding:16px 23px;box-shadow:var(--shadow)}
+.invite-benefits>div{padding:20px 0;border-bottom:1px solid var(--line)}
+.invite-benefits>div:last-child{border-bottom:0}
+.invite-benefits .invite-stat{display:block;color:var(--accent);font:800 13px Manrope,sans-serif;margin-bottom:6px}
+.invite-benefits strong{font:800 17px Manrope,sans-serif}
+.invite-benefits p{color:var(--muted);font-size:13px;line-height:1.6;margin:8px 0 0}
+.invite-how{padding:26px 0 36px}
+.invite-how h2{font:800 clamp(22px,3vw,32px) Manrope,sans-serif;margin:0 0 21px}
+.invite-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;list-style:none;counter-reset:inviteSteps;padding:0;margin:0}
+.invite-steps li{background:#fff;border:1px solid var(--line);border-radius:14px;min-height:137px;padding:21px;counter-increment:inviteSteps;display:flex;flex-direction:column;gap:10px}
+.invite-steps li:before{content:counter(inviteSteps,decimal-leading-zero);font:800 15px Manrope,sans-serif;color:var(--accent)}
+.invite-steps strong{font:800 15px Manrope,sans-serif}
+.invite-steps span{font-size:13px;line-height:1.6;color:var(--muted)}
+.invite-clarity{border-top:1px solid var(--line);padding:28px 0 36px}
+.invite-clarity h2{font:800 21px Manrope,sans-serif;margin:0 0 10px}
+.invite-clarity p{max-width:770px;color:var(--muted);font-size:14px;line-height:1.65;margin:0 0 18px}
+.invite-clarity .button{display:inline-flex;align-items:center;min-height:44px}
+@media(max-width:880px){.invite-hero{grid-template-columns:1fr;gap:14px}.invite-benefits{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}.invite-benefits>div{border-bottom:0;padding:12px 0}.invite-benefits strong{font-size:14px}}
+@media(max-width:580px){.invite-page{padding-top:27px}.invite-hero{padding-bottom:20px}.invite-hero h1{letter-spacing:-1.3px}.invite-lead{font-size:15px}.invite-actions{flex-direction:column;align-items:stretch}.invite-actions .button{width:100%}.invite-benefits{display:block}.invite-benefits>div{padding:13px 0;border-bottom:1px solid var(--line)}.invite-benefits>div:last-child{border:0}.invite-steps{grid-template-columns:1fr}.invite-steps li{min-height:auto}.invite-how{padding-top:17px}}

@@ -100,14 +100,11 @@ function profileShareUrl(profile){
   return whatsappUrl(T('shareProfessionalText',{name:profile.display_name,category:profile.category,city:profile.city,state:profile.state,url:publicProfileUrl(profile.id)}));
 }
 function professionalInviteUrl(context={}){
-  const url=publicBase();
+  const url=new URL('convite.html',publicBase());
   const values=referralContext(context);
   const focus=[values.category,values.city,values.state].filter(Boolean).join(' · ');
-  if(focus){
-    url.searchParams.set('cadastro','profissional');
-    addReferralToUrl(url,values);
-  }
-  url.hash='para-profissionais';
+  addReferralToUrl(url,values);
+  if(locale()==='en')url.searchParams.set('lang','en');
   return whatsappUrl(focus
     ?T('inviteLocalProfessionalText',{focus,url:url.href})
     :T('inviteProfessionalText',{url:url.href}));
@@ -606,6 +603,12 @@ async function init(){
   document.querySelector('#invite-professional').href=professionalInviteUrl();
   await loadSharedProfile();
   await initAuth();
+  const invitation=new URL(window.location.href).searchParams;
+  if(invitation.get('cadastro')==='profissional'&&invitation.get('abrir')==='1'&&!currentUser&&supabaseClient){
+    accountMessage.textContent=T('registerSignInHelp');
+    if(!accountDialog.open)accountDialog.showModal();
+    updateIntentsInUrl({abrir:null});
+  }
 }
 init();
 

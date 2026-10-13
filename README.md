@@ -73,3 +73,13 @@ Para consultar a checklist de publicação/autenticação e limites do MVP, veja
 - A versão pública continua sem anúncios falsos ou páginas artificiais para cidades vazias.
 - O Supabase deste projeto é **compartilhado** com outros produtos. Não alterar o Site URL global. Verificar manualmente [Auth → URL Configuration](https://supabase.com/dashboard/project/bnlvvsjgpywpbfhwdcan/auth/url-configuration) e adicionar o endereço base do Perto e um padrão limitado à rota /perto/ que aceite o query string de cadastro.
 - O conector atual não expõe a lista de Redirect URLs configurada; **não há confirmação de que estejam autorizadas**. Um teste com e-mail real é obrigatório antes de uma campanha.
+
+
+## Página de convite para os primeiros profissionais
+
+- Endereço: https://helioconde.github.io/perto/convite.html. Página HTML **indexável única**, com título e descrição Open Graph próprios, pensada para ser compartilhada em WhatsApp sem prometer contatos ou resultados fictícios.
+- O botão de convite de busca sem resultados envia uma mensagem manual com link para essa página; cidade, UF e categoria são opcionais e validadas no cliente.
+- A página explica o benefício, a moderação e os limites do beta, e encaminha à home para criar uma conta. O clique em **Cadastrar meu serviço** abre a autenticação diretamente, sem exigir outro clique.
+- A identidade entre visita e cadastro é preservada no link e na confirmação de e-mail, mas **nenhum perfil ou orçamento é criado automaticamente**.
+- O sitemap inclui apenas esta página genérica, não milhares de páginas locais. Não há ferramentas de disparo automático de mensagens.
+- Verificação automática cobre prévia social, idioma, parâmetros inválidos, encaminhamento e preservação de dados. **Testes com Supabase Auth real permanecem pendentes de liberação dos redirect URLs**.

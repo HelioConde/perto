@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0-beta",
   "scripts": {
-    "check": "node --check app.js && node --check admin.js && node --check i18n.js && node --check supabase-config.js && node --check live-update.js",
+    "check": "node --check app.js && node --check convite.js && node --check admin.js && node --check i18n.js && node --check supabase-config.js && node --check live-update.js",
     "test:e2e": "playwright test"
   },
   "devDependencies": {

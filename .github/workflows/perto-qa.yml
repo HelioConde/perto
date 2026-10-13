@@ -26,6 +26,8 @@ jobs:
           npm run check
           grep -q 'perto_professionals' app.js
           grep -q 'perto_requests' app.js
+          grep -q 'convite.html' sitemap.xml
+          grep -q 'id="convite-register"' convite.html
           grep -q "name=\"description\"" index.html
           grep -q 'perto_requests_active_professional_guard' supabase/migrations/20261012225500_active_professional_quote_guard.sql
           grep -q 'revoke all privileges' supabase/migrations/20261012232000_perto_least_privilege.sql
