@@ -221,7 +221,7 @@ a:not(.button):hover{text-decoration:underline;text-underline-offset:4px}
   .brand{flex:1 1 auto;font-size:23px}
   .top-actions{width:auto;justify-content:flex-end;gap:8px}
   .top-actions .sync-status{display:none}
-  .top-actions .button{min-height:42px}
+  .top-actions .button{min-height:44px}
   .primary-nav{order:3;justify-content:stretch;gap:6px;margin:0}
   .primary-nav a{flex:1 1 0;justify-content:center;padding:10px 7px;min-height:44px;text-align:center}
   .hero{display:grid;grid-template-columns:1fr;padding:36px 22px;gap:22px;margin-top:18px;border-radius:20px}
