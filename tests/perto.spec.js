@@ -13,10 +13,10 @@ const pendingProfile = {
   display_name: 'Perfil ainda pendente', status: 'pending'
 };
 
-async function installMock(page, { user = null, loginUser = null, profiles = [activeProfile, pendingProfile], requests = [] } = {}) {
+async function installMock(page, { user = null, loginUser = null, signInError = null, resendError = null, profiles = [activeProfile, pendingProfile], requests = [] } = {}) {
   await page.route('https://cdn.jsdelivr.net/**', route => route.abort());
-  await page.addInitScript(({ user, loginUser, profiles, requests }) => {
-    const state = { user, loginUser, profiles, requests, inserted: [], updated: [], rpcCalls: [], authCalls: [], authCallback: null, failNextRequestsLoad: false, errors: [] };
+  await page.addInitScript(({ user, loginUser, signInError, resendError, profiles, requests }) => {
+    const state = { user, loginUser, signInError, resendError, profiles, requests, inserted: [], updated: [], rpcCalls: [], authCalls: [], authCallback: null, failNextRequestsLoad: false, errors: [] };
     window.__pertoTest = state;
     function query(table) {
       const opts = { mode: 'read', filters: [], limit: 100 };
@@ -112,19 +112,21 @@ async function installMock(page, { user = null, loginUser = null, profiles = [ac
         getSession: async () => ({ data: { session: state.user ? { user: state.user } : null }, error: null }),
         onAuthStateChange: callback => { state.authCallback = callback; return { data: { subscription: { unsubscribe() {} } } }; },
         signInWithPassword: async () => {
+          if (state.signInError) return { error: { message: state.signInError } };
           if (!state.loginUser) return { error: { message: 'Not a real account' } };
           state.user=state.loginUser;
           if (state.authCallback) state.authCallback('SIGNED_IN',{ user:state.loginUser });
           return { error:null, data:{ user:state.loginUser } };
         },
         signUp: async options => { state.authCalls.push({ type: 'signUp', options }); return { data: { session: null }, error: null }; },
+        resend: async options => { state.authCalls.push({ type:'resend', options }); return state.resendError?{error:{message:state.resendError}}:{error:null}; },
         resetPasswordForEmail: async (email, options) => { state.authCalls.push({ type: 'reset', email, options }); return { error: null }; },
         updateUser: async options => { state.authCalls.push({ type: 'updateUser', options }); return { error: null }; },
         signOut: async () => { state.user = null; return { error: null }; }
       }
     };
     window.supabase = { createClient: () => client };
-  }, { user, loginUser, profiles, requests });
+  }, { user, loginUser, signInError, resendError, profiles, requests });
 }
 
 test('filters public active profiles and does not show pending profiles', async ({ page }) => {
@@ -942,4 +944,119 @@ test('founding professional CTA and count copy translate into English',async({pa
   await expect(page.locator('#hero-count')).toHaveText('0');
   await expect(page.locator('#hero-count-label')).toContainText('No approved listings yet');
   await expect(page.locator('#hero-founders')).toHaveText('Be among the first professionals');
+});
+
+
+test('signup awaiting email confirmation gives instructions and a manual resend control',async({page})=>{
+  await installMock(page);
+  await page.goto('/');
+  await page.locator('#account-open').click();
+  await page.locator('#auth-form [name="email"]').fill('prestador@example.test');
+  await page.locator('#auth-form [name="password"]').fill('senha-forte-123');
+  await expect(page.locator('#email-confirmation-help')).toBeHidden();
+  await page.locator('#sign-up').click();
+  await expect(page.locator('#email-confirmation-help')).toBeVisible();
+  await expect(page.locator('#email-confirmation-help')).toContainText('pasta de spam');
+  await expect(page.locator('#resend-confirmation')).toBeEnabled();
+  await page.locator('#resend-confirmation').click();
+  await expect(page.locator('#account-message')).toContainText('Se houver uma confirmação pendente');
+  const calls=await page.evaluate(()=>window.__pertoTest.authCalls);
+  expect(calls.filter(x=>x.type==='resend')).toHaveLength(1);
+  const resend=calls.find(x=>x.type==='resend').options;
+  expect(resend.type).toBe('signup');
+  expect(resend.email).toBe('prestador@example.test');
+  expect(resend.options.emailRedirectTo).toBe('http://127.0.0.1:4179/');
+});
+
+test('resend confirmation is locally throttled after success',async({page})=>{
+  await installMock(page);
+  await page.goto('/');
+  await page.locator('#account-open').click();
+  await page.locator('#auth-form [name="email"]').fill('prestador@example.test');
+  await page.locator('#auth-form [name="password"]').fill('senha-forte-123');
+  await page.locator('#sign-up').click();
+  await page.locator('#resend-confirmation').click();
+  await expect(page.locator('#resend-confirmation')).toBeDisabled();
+  const calls=await page.evaluate(()=>window.__pertoTest.authCalls.filter(x=>x.type==='resend'));
+  expect(calls).toHaveLength(1);
+});
+
+test('email-not-confirmed signin offers manual resend without signup again',async({page})=>{
+  await installMock(page,{signInError:'Email not confirmed'});
+  await page.goto('/');
+  await page.locator('#account-open').click();
+  await page.locator('#auth-form [name="email"]').fill('prestador@example.test');
+  await page.locator('#auth-form [name="password"]').fill('senha-forte-123');
+  await page.locator('#auth-form button[type="submit"]').click();
+  await expect(page.locator('#account-message')).toContainText('Confirme seu e-mail');
+  await expect(page.locator('#email-confirmation-help')).toBeVisible();
+  await page.locator('#resend-confirmation').click();
+  const calls=await page.evaluate(()=>window.__pertoTest.authCalls);
+  expect(calls.filter(x=>x.type==='signUp')).toHaveLength(0);
+  expect(calls.filter(x=>x.type==='resend')).toHaveLength(1);
+});
+
+test('invalid password does not expose a misleading email-confirmation prompt',async({page})=>{
+  await installMock(page);
+  await page.goto('/');
+  await page.locator('#account-open').click();
+  await page.locator('#auth-form [name="email"]').fill('visitante@example.test');
+  await page.locator('#auth-form [name="password"]').fill('senha-forte-123');
+  await page.locator('#auth-form button[type="submit"]').click();
+  await expect(page.locator('#email-confirmation-help')).toBeHidden();
+});
+
+test('email resend preserves only the original provider invitation parameters',async({page})=>{
+  await installMock(page);
+  await page.goto('/?cadastro=profissional&cidade=Campinas&uf=SP&categoria=Eletricista&redirect=https%3A%2F%2Fevil.example%2F');
+  await page.locator('#register-professional').click();
+  await page.locator('#auth-form [name="email"]').fill('prestador@example.test');
+  await page.locator('#auth-form [name="password"]').fill('senha-forte-123');
+  await page.locator('#sign-up').click();
+  await page.locator('#resend-confirmation').click();
+  const calls=await page.evaluate(()=>window.__pertoTest.authCalls);
+  const redirect=new URL(calls.find(x=>x.type==='resend').options.options.emailRedirectTo);
+  expect(redirect.searchParams.get('cadastro')).toBe('profissional');
+  expect(redirect.searchParams.get('cidade')).toBe('Campinas');
+  expect(redirect.searchParams.get('uf')).toBe('SP');
+  expect(redirect.searchParams.get('categoria')).toBe('Eletricista');
+  expect(redirect.searchParams.has('redirect')).toBe(false);
+  expect(redirect.hostname).toBe('127.0.0.1');
+});
+
+test('failed resend reports a problem and keeps the button usable',async({page})=>{
+  await installMock(page,{resendError:'email service temporarily unavailable'});
+  await page.goto('/');
+  await page.locator('#account-open').click();
+  await page.locator('#auth-form [name="email"]').fill('prestador@example.test');
+  await page.locator('#auth-form [name="password"]').fill('senha-forte-123');
+  await page.locator('#sign-up').click();
+  await page.locator('#resend-confirmation').click();
+  await expect(page.locator('#account-message')).toContainText('Não foi possível solicitar outro e-mail');
+  await expect(page.locator('#resend-confirmation')).toBeEnabled();
+});
+
+test('resend instructions and button are translated into English',async({page})=>{
+  await installMock(page);
+  await page.goto('/');
+  await page.locator('[data-perto-lang="en"]').click();
+  await page.locator('#account-open').click();
+  await page.locator('#auth-form [name="email"]').fill('prestador@example.test');
+  await page.locator('#auth-form [name="password"]').fill('senha-forte-123');
+  await page.locator('#sign-up').click();
+  await expect(page.locator('#email-confirmation-help')).toContainText('Check your inbox and spam folder');
+  await expect(page.locator('#resend-confirmation')).toHaveText('Resend confirmation email');
+});
+
+test('successful login clears a previously displayed confirmation notice',async({page})=>{
+  const loginUser={id:'4e4e4e4e-4e4e-4e4e-8e4e-4e4e4e4e4e4e',email:'prestador@example.test'};
+  await installMock(page,{loginUser});
+  await page.goto('/');
+  await page.locator('#account-open').click();
+  await page.locator('#auth-form [name="email"]').fill('prestador@example.test');
+  await page.locator('#auth-form [name="password"]').fill('senha-forte-123');
+  await page.locator('#sign-up').click();
+  await expect(page.locator('#email-confirmation-help')).toBeVisible();
+  await page.locator('#auth-form button[type="submit"]').click();
+  await expect(page.locator('#email-confirmation-help')).toBeHidden();
 });

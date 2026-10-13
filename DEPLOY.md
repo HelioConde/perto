@@ -191,3 +191,9 @@ Validação esperada: abrir `https://helioconde.github.io/perto/?buscar=1&cidade
 ## 18. Contagem real do catálogo e início do beta
 
 A contagem da home distingue **0 confirmado** de **erro de rede** e estado de carregamento. Caso a consulta ao Supabase confirme que não existem perfis ativos, a interface apresenta um convite explícito aos primeiros profissionais. Se a API estiver indisponível, nenhum número fictício será exibido. A interface fica coberta por E2E simulado e deve ser conferida em produção com a conexão anônima real.
+
+## 19. Recuperação do cadastro por confirmação de e-mail
+
+O Perto agora mostra orientações de caixa de entrada/spam após `auth.signUp` sem sessão e quando o login retorna `Email not confirmed`. O usuário pode solicitar manualmente novo e-mail por `auth.resend({type:'signup', email, options:{emailRedirectTo}})` — sem disparo automático. O endereço de retorno mantém **somente** os parâmetros aprovados da intenção original (cadastro de prestador ou pedido específico). Há um bloqueio local de 60 segundos após sucesso, mas o servidor de autenticação continua responsável pelos limites reais. Respostas de cadastro e reenvio evitam confirmar a existência de contas.
+
+**Obrigatório antes de convidar profissionais reais:** autorizar a origem `https://helioconde.github.io/perto/` e os links de retorno parametrizados em Auth → URL Configuration do Supabase compartilhado, conferir o template de e-mail e testar confirmação + reenvio usando um e-mail real. Não alterar o Site URL global. Testes de navegador são simulados; não comprovam entrega efetiva de e-mail.

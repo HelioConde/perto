@@ -140,3 +140,11 @@
 .hero-founders[hidden]{display:none!important}
 .hero-card #hero-count{font-variant-numeric:tabular-nums}
 .hero-card #hero-count-label{font-size:12px;line-height:1.5;margin-top:6px}
+
+/* Email verification support without automatic email sends. */
+.email-confirmation-help{margin-top:14px;padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--soft)}
+.email-confirmation-help[hidden]{display:none!important}
+.email-confirmation-help strong{display:block;font-size:13px;color:var(--accent-dark)}
+.email-confirmation-help p{margin:7px 0 11px;color:var(--ink);font-size:12px;line-height:1.6}
+.email-confirmation-help button{min-height:42px;font-size:12px}
+.email-confirmation-help small{display:block;margin-top:9px;color:var(--muted);font-size:11px;line-height:1.5}

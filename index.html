@@ -232,6 +232,12 @@
       <button id="sign-out" class="button ghost full" type="button" data-perto-text="signOut">Sair da conta</button>
     </div>
     <p id="account-message" class="form-message" role="status" aria-live="polite"></p>
+    <div id="email-confirmation-help" class="email-confirmation-help" hidden>
+      <strong data-perto-text="confirmationTitle">Confirme o e-mail para continuar</strong>
+      <p data-perto-text="confirmationHelp">Verifique sua caixa de entrada e a pasta de spam. Abra o link recebido, volte ao Perto e entre com seu e-mail e senha.</p>
+      <button id="resend-confirmation" class="button ghost" type="button" data-perto-text="resendConfirmation">Reenviar e-mail de confirmação</button>
+      <small data-perto-text="confirmationNotice">O envio depende do provedor de e-mail e pode estar sujeito a limites de frequência.</small>
+    </div>
   </dialog>
 
   <dialog id="password-dialog" class="dialog account-dialog" aria-labelledby="password-title">

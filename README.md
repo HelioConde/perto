@@ -103,3 +103,7 @@ Para consultar a checklist de publicação/autenticação e limites do MVP, veja
 ## Convite honesto quando o catálogo está vazio
 
 A home mostra contagem real de anúncios ativos: durante a consulta exibe um traço, não um zero inventado. Se o banco confirmar 0 profissionais aprovados, surge um botão para os primeiros prestadores acessarem a página de convite. Quando a consulta falha ou o serviço está fora do ar, aparece **Contagem indisponível** em vez de declarar que não há profissionais. O CTA de fundadores não promete vantagens, contratos nem prioridade futura.
+
+## Orientação de e-mail
+
+Na primeira inscrição, se a conta precisar confirmar e-mail, há instruções de caixa de entrada/spam e um botão voluntário de **reenviar confirmação**. Também aparece para erro explícito de login `Email not confirmed`. O reenvio preserva a intenção de inscrição/solicitação, sem URLs de terceiros, e possui bloqueio local de 60 segundos após resposta bem-sucedida. O funcionamento real depende dos Redirect URLs configurados no Supabase compartilhado e de homologação com e-mail verdadeiro.

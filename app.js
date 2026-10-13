@@ -36,6 +36,9 @@ let requestFilter='all';
 let searchHasRun=false;
 let catalogCount=null;
 let catalogCountLoading=true;
+let confirmationEmail='';
+let lastConfirmationResend=0;
+let confirmationBusy=false;
 
 function escapeHtml(value=''){return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function money(cents){return cents==null?T('consult'):(Number(cents)/100).toLocaleString(locale(),{style:'currency',currency:'BRL'});}
@@ -482,11 +485,23 @@ function authErrorText(error){
   if(m.includes('password should be at least'))return T('shortPassword');
   return T('authError');
 }
+function showConfirmationHelp(email){
+  confirmationEmail=String(email||'').trim();
+  document.querySelector('#email-confirmation-help').hidden=!confirmationEmail;
+  document.querySelector('#resend-confirmation').disabled=confirmationBusy||Date.now()-lastConfirmationResend<60000;
+}
+function hideConfirmationHelp(){
+  confirmationEmail='';
+  document.querySelector('#email-confirmation-help').hidden=true;
+}
 function updateAccountUi(){
   accountOpen.disabled=!supabaseClient;accountOpen.textContent=currentUser?T('myAccount'):T('signIn');
   syncStatus.textContent=currentUser?(loadingAccount?T('loadingAccount'):T('connected')+' · '+(currentUser.email||T('myAccount'))):T('searchStatus');
   accountForm.hidden=Boolean(currentUser)||!supabaseClient;accountProfile.hidden=!currentUser;
-  if(currentUser)document.querySelector('#account-email').textContent=currentUser.email||T('accountConnected');
+  if(currentUser){
+    document.querySelector('#account-email').textContent=currentUser.email||T('accountConnected');
+    hideConfirmationHelp();
+  }
 }
 
 document.querySelector('#request-refresh').addEventListener('click',refreshRequestInbox);
@@ -607,15 +622,56 @@ document.querySelector('#account-close').addEventListener('click',()=>accountDia
 accountDialog.addEventListener('click',e=>{if(e.target===accountDialog)accountDialog.close();});
 accountForm.addEventListener('submit',async event=>{
   event.preventDefault();if(!supabaseClient)return;const b=accountForm.querySelector('[type="submit"]');b.disabled=true;accountMessage.textContent=T('signingIn');
-  try{const {error}=await supabaseClient.auth.signInWithPassword({email:accountForm.elements.email.value.trim(),password:accountForm.elements.password.value});if(error)throw error;accountMessage.textContent=T('accountConnected');}
-  catch(error){accountMessage.textContent=authErrorText(error);}finally{b.disabled=false;}
+  const email=accountForm.elements.email.value.trim();
+  try{
+    const {error}=await supabaseClient.auth.signInWithPassword({email,password:accountForm.elements.password.value});
+    if(error)throw error;
+    hideConfirmationHelp();
+    accountMessage.textContent=T('accountConnected');
+  }catch(error){
+    if(String(error?.message||'').toLowerCase().includes('email not confirmed'))showConfirmationHelp(email);
+    else hideConfirmationHelp();
+    accountMessage.textContent=authErrorText(error);
+  }finally{b.disabled=false;}
 });
 document.querySelector('#sign-up').addEventListener('click',async()=>{
   if(!supabaseClient)return;const email=accountForm.elements.email.value.trim(),password=accountForm.elements.password.value;
   if(!email||password.length<8){accountMessage.textContent=T('signupInvalid');return;}
   const b=document.querySelector('#sign-up');b.disabled=true;accountMessage.textContent=T('creatingAccount');
-  try{const {data,error}=await supabaseClient.auth.signUp({email,password,options:{emailRedirectTo:authRedirectUrl()}});if(error)throw error;accountMessage.textContent=data.session?T('accountCreated'):T('confirmEmail');}
-  catch(error){accountMessage.textContent=authErrorText(error);}finally{b.disabled=false;}
+  try{
+    const {data,error}=await supabaseClient.auth.signUp({email,password,options:{emailRedirectTo:authRedirectUrl()}});
+    if(error)throw error;
+    if(data.session){hideConfirmationHelp();accountMessage.textContent=T('accountCreated');}
+    else{showConfirmationHelp(email);accountMessage.textContent=T('confirmEmail');}
+  }catch(error){hideConfirmationHelp();accountMessage.textContent=authErrorText(error);}
+  finally{b.disabled=false;}
+});
+document.querySelector('#resend-confirmation').addEventListener('click',async()=>{
+  if(!supabaseClient||!confirmationEmail||confirmationBusy)return;
+  if(Date.now()-lastConfirmationResend<60000){
+    accountMessage.textContent=T('confirmationCooldown');return;
+  }
+  confirmationBusy=true;
+  const button=document.querySelector('#resend-confirmation');
+  button.disabled=true;
+  accountMessage.textContent=T('resendingConfirmation');
+  try{
+    const {error}=await supabaseClient.auth.resend({
+      type:'signup',email:confirmationEmail,options:{emailRedirectTo:authRedirectUrl()}
+    });
+    if(error)throw error;
+    lastConfirmationResend=Date.now();
+    accountMessage.textContent=T('confirmationResent');
+    setTimeout(()=>{
+      if(!confirmationBusy&&confirmationEmail)button.disabled=Date.now()-lastConfirmationResend<60000;
+    },60000);
+  }catch(error){
+    accountMessage.textContent=T('confirmationResendFailed');
+    console.error(error);
+  }finally{
+    confirmationBusy=false;
+    button.disabled=Date.now()-lastConfirmationResend<60000;
+  }
 });
 document.querySelector('#reset-password').addEventListener('click',async()=>{
   if(!supabaseClient)return;const email=accountForm.elements.email.value.trim();if(!email){accountMessage.textContent=T('emailRequired');return;}
