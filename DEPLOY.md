@@ -181,3 +181,9 @@ Passos para habilitar com segurança:
 5. Revisar Auth Redirect URLs na configuração do projeto compartilhado (seção 9), sem alterar o Site URL de outros aplicativos.
 
 A nova interface do prestador mostra o status (pendente, aprovado, rejeitado, pausado), permite atualização **manual** do status somente do próprio perfil e explica que mudanças em um perfil aprovado exigem nova moderação. O aplicativo não promete prazo de aprovação nem envia notificações inexistentes.
+
+## 17. Pesquisa compartilhável e aquisição do primeiro cliente
+
+Um visitante pode divulgar o **link de busca por região/categoria** gerado após pesquisar. O parâmetro `buscar=1` ativa os filtros de cidade, UF e categoria e executa a pesquisa na URL pública, sem autorização nem cookie de rastreamento. O campo de texto livre nunca entra nesse link. Não representar links de busca como páginas indexadas únicas, pois a home mantém `canonical` próprio.
+
+Validação esperada: abrir `https://helioconde.github.io/perto/?buscar=1&cidade=Campinas&uf=SP&categoria=Eletricista`; o catálogo pode estar vazio enquanto não existirem anúncios aprovados. Compartilhar pesquisas é voluntário, não automático.

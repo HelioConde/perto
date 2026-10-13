@@ -126,3 +126,11 @@
 .profile-actions{display:flex;gap:9px;flex-wrap:wrap}
 .profile-actions .button{flex:1 1 135px;min-height:43px}
 .profile-review-hint{padding:11px 13px;border:1px solid #e1cfab;background:var(--pending-soft);color:#745514;border-radius:10px;font-size:13px;line-height:1.55}
+
+/* Consent-based discovery links: no personal search text in a shared URL. */
+.search-share{margin:12px 0 18px;padding:14px 16px;border:1px solid var(--line);border-radius:13px;background:var(--soft)}
+.search-share strong{display:block;font:800 13px Manrope,sans-serif;color:var(--accent-dark);margin-bottom:9px}
+.search-share-actions{display:flex;flex-wrap:wrap;gap:9px}
+.search-share-actions .button{display:inline-flex;align-items:center;justify-content:center;min-height:43px;font-size:12px}
+.search-share small{display:block;margin-top:9px;font-size:11px;color:var(--muted);line-height:1.5}
+@media(max-width:580px){.search-share-actions{flex-direction:column}.search-share-actions .button{width:100%}}

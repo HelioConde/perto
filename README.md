@@ -91,3 +91,11 @@ Para consultar a checklist de publicação/autenticação e limites do MVP, veja
 - Após aprovação, o botão de compartilhar surge sem recarregar a página. Editar perfil ativo avisa que as alterações devolvem o anúncio à revisão.
 - Perfis rejeitados podem corrigir os detalhes e reenviar para análise. Nenhum usuário recebe poder de mudar diretamente o status de aprovação.
 - Auditoria no Supabase em 13/10: **zero moderadores cadastrados**. Sem liberar uma conta real de confiança pelo SQL Editor, o painel não consegue aprovar ninguém.
+
+## Pesquisa compartilhável para trazer clientes e profissionais
+
+- Após buscar por cidade, UF ou categoria, há botões para **copiar a busca** ou **compartilhá-la pelo WhatsApp**. A ação é voluntária e não dispara mensagens.
+- Exemplo: `?buscar=1&cidade=Campinas&uf=SP&categoria=Eletricista`; o destinatário abre filtros já selecionados e a pesquisa consulta apenas profissionais reais e ativos.
+- Links não incluem nomes ou descrições digitados no campo de texto livre: isso evita divulgar acidentalmente detalhes pessoais da pesquisa. Estado e categoria são validados por lista permitida.
+- O compartilhamento não é uma página SEO estática por município nem garante que já existam prestadores: a busca vazia continua convidando profissionais verdadeiros.
+- Trocar filtros oculta o link antigo até uma nova pesquisa. A interface também funciona em inglês e celular.

@@ -33,6 +33,7 @@ let pendingRequestProfessionalId='';
 let pendingProfessionalSignup=false;
 let loadingAccount=false;
 let requestFilter='all';
+let searchHasRun=false;
 
 function escapeHtml(value=''){return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function money(cents){return cents==null?T('consult'):(Number(cents)/100).toLocaleString(locale(),{style:'currency',currency:'BRL'});}
@@ -98,6 +99,30 @@ function publicProfileUrl(id){
 function whatsappUrl(message){return 'https://wa.me/?text='+encodeURIComponent(message);}
 function profileShareUrl(profile){
   return whatsappUrl(T('shareProfessionalText',{name:profile.display_name,category:profile.category,city:profile.city,state:profile.state,url:publicProfileUrl(profile.id)}));
+}
+function shareableSearchUrl(){
+  const url=publicBase();
+  url.searchParams.set('buscar','1');
+  addReferralToUrl(url,referralFromSearch());
+  return url.href;
+}
+function refreshSearchSharing(){
+  const box=document.querySelector('#search-share');
+  const filters=referralFromSearch();
+  const canShare=searchHasRun && !!(filters.city||filters.state||filters.category);
+  box.hidden=!canShare;
+  if(!canShare)return;
+  const parts=[filters.category,filters.city,filters.state].filter(Boolean).join(' · ');
+  document.querySelector('#search-whatsapp').href=whatsappUrl(T('shareSearchText',{focus:parts,url:shareableSearchUrl()}));
+}
+async function copySearchUrl(){
+  if(document.querySelector('#search-share').hidden)return;
+  const url=shareableSearchUrl();
+  try{
+    if(!navigator.clipboard?.writeText)throw new Error('clipboard unavailable');
+    await navigator.clipboard.writeText(url);
+    showToast(T('searchLinkCopied'));
+  }catch(error){window.prompt(T('copySearchPrompt'),url);}
 }
 function professionalInviteUrl(context={}){
   const url=new URL('convite.html',publicBase());
@@ -175,8 +200,11 @@ async function searchProfessionals(){
   const url=new URL(window.location.href);
   if(url.searchParams.has('profissional')){
     url.searchParams.delete('profissional');
+    url.searchParams.delete('pedido');
     window.history.replaceState(null,'',url.pathname+url.search+url.hash);
   }
+  searchHasRun=false;
+  refreshSearchSharing();
   if(!supabaseClient){showToast(T('searchUnavailable'));return;}
   const button=document.querySelector('#search-button');button.disabled=true;
   document.querySelector('#result-summary').textContent=T('searching');
@@ -196,7 +224,13 @@ async function searchProfessionals(){
       if(!term)return true;
       return [profile.display_name,profile.category,profile.description].some(v=>normalize(v).includes(term));
     });
+    searchHasRun=true;
     renderResults();
+    refreshSearchSharing();
+    if(new URL(window.location.href).searchParams.get('buscar')==='1'){
+      const next=new URL(shareableSearchUrl());
+      window.history.replaceState(null,'',next.pathname+next.search+next.hash);
+    }
   }catch(error){console.error(error);searchResults=[];resultsEl.innerHTML='<div class="empty-box error"><strong>'+escapeHtml(T('searchFailedTitle'))+'</strong><span>'+escapeHtml(T('tryAgain'))+'</span></div>';document.querySelector('#result-summary').textContent=T('searchFailed');}
   finally{button.disabled=false;}
 }
@@ -452,7 +486,12 @@ document.querySelector('#request-filters').addEventListener('click',event=>{
 });
 
 document.querySelector('#search-button').addEventListener('click',searchProfessionals);
-[cityInput,stateSelect,categorySelect,termInput].forEach(el=>el.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();searchProfessionals();}}));
+document.querySelector('#search-copy').addEventListener('click',copySearchUrl);
+[cityInput,stateSelect,categorySelect,termInput].forEach(el=>{
+  el.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();searchProfessionals();}});
+  el.addEventListener('input',()=>{searchHasRun=false;refreshSearchSharing();});
+  el.addEventListener('change',()=>{searchHasRun=false;refreshSearchSharing();});
+});
 resultsEl.addEventListener('click',event=>{const b=event.target.closest('[data-request]');if(b)openRequest(b.dataset.request);});
 document.addEventListener('click',event=>{
   const copy=event.target.closest('[data-copy-profile]');
@@ -648,6 +687,14 @@ async function init(){
   await loadSharedProfile();
   await initAuth();
   const invitation=new URL(window.location.href).searchParams;
+  if(invitation.get('buscar')==='1'&&!invitation.has('profissional')&&invitation.get('cadastro')!=='profissional'){
+    const filters=referralFromUrl();
+    cityInput.value=filters.city;
+    stateSelect.value=filters.state;
+    categorySelect.value=filters.category;
+    termInput.value='';
+    await searchProfessionals();
+  }
   if(invitation.get('cadastro')==='profissional'&&invitation.get('abrir')==='1'&&!currentUser&&supabaseClient){
     accountMessage.textContent=T('registerSignInHelp');
     if(!accountDialog.open)accountDialog.showModal();
@@ -662,6 +709,7 @@ window.addEventListener('perto:language-change',()=>{
   renderProfile();
   renderRequestList();
   document.querySelector('#invite-professional').href=professionalInviteUrl();
+  refreshSearchSharing();
   if(searchResults.length)renderResults();
   else if(resultsEl.querySelector('.empty-box') && resultsEl.textContent.includes('Busque por cidade ou categoria.')){
     resultsEl.innerHTML='<div class="empty-box"><strong>'+escapeHtml(T('initialSearch'))+'</strong><span>'+escapeHtml(T('onlyApproved'))+'</span></div>';

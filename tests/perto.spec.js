@@ -817,3 +817,91 @@ test('listing status refresh and guidance follow the English interface', async (
   await expect(page.locator('[data-refresh-profile]')).toHaveText('Check status');
   await expect(page.locator('#professional-profile [data-copy-profile]')).toHaveCount(0);
 });
+
+
+test('shared search link opens the chosen location and category with an actual filtered search', async ({page}) => {
+  await installMock(page);
+  await page.goto('/?buscar=1&cidade=Bras%C3%ADlia&uf=DF&categoria=Eletricista');
+  await expect(page.locator('#city')).toHaveValue('Brasília');
+  await expect(page.locator('#state')).toHaveValue('DF');
+  await expect(page.locator('#category')).toHaveValue('Eletricista');
+  await expect(page.locator('.professional-card')).toHaveCount(1);
+  await expect(page.locator('#search-share')).toBeVisible();
+  const url=new URL(await page.locator('#search-whatsapp').getAttribute('href'));
+  const message=url.searchParams.get('text');
+  expect(message).toContain('Brasília');
+  expect(message).toContain('Eletricista');
+});
+
+test('a manually searched city can be shared without leaking the free-text query', async ({page}) => {
+  await page.addInitScript(() => Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async text=>{window.__searchCopied=text;}}}));
+  await installMock(page);
+  await page.goto('/');
+  await page.locator('#city').fill('Brasília');
+  await page.locator('#state').selectOption('DF');
+  await page.locator('#category').selectOption('Eletricista');
+  await page.locator('#term').fill('informação privada do visitante');
+  await page.locator('#search-button').click();
+  await expect(page.locator('#search-share')).toBeVisible();
+  await page.locator('#search-copy').click();
+  const result=await page.evaluate(()=>window.__searchCopied);
+  const url=new URL(result);
+  expect(url.searchParams.get('buscar')).toBe('1');
+  expect(url.searchParams.get('cidade')).toBe('Brasília');
+  expect(url.searchParams.get('uf')).toBe('DF');
+  expect(url.searchParams.get('categoria')).toBe('Eletricista');
+  expect(result).not.toContain('informação privada');
+  await expect(page.locator('#toast')).toContainText('Link da busca copiado');
+});
+
+test('changing filters hides outdated share links until a fresh search', async ({page})=>{
+  await installMock(page);
+  await page.goto('/');
+  await page.locator('#city').fill('Brasília');
+  await page.locator('#search-button').click();
+  await expect(page.locator('#search-share')).toBeVisible();
+  await page.locator('#city').fill('Campinas');
+  await expect(page.locator('#search-share')).toBeHidden();
+  await page.locator('#search-button').click();
+  await expect(page.locator('#search-share')).toBeVisible();
+  const url=new URL(await page.locator('#search-whatsapp').getAttribute('href'));
+  const content=url.searchParams.get('text');
+  expect(content).toContain('Campinas');
+  expect(content).not.toContain('Brasília');
+});
+
+test('invalid filter parameters are ignored and not forwarded in share URLs',async({page})=>{
+  await installMock(page);
+  await page.goto('/?buscar=1&cidade=Campinas&uf=XX&categoria=%3Cscript%3E');
+  await expect(page.locator('#city')).toHaveValue('Campinas');
+  await expect(page.locator('#state')).toHaveValue('');
+  await expect(page.locator('#category')).toHaveValue('');
+  await expect(page.locator('#search-share')).toBeVisible();
+  const message=new URL(await page.locator('#search-whatsapp').getAttribute('href')).searchParams.get('text');
+  expect(message).not.toContain('<script>');
+  const matched=message.match(/https?:\/\/[^\s]+/);
+  const url=new URL(matched[0]);
+  expect(url.searchParams.has('uf')).toBe(false);
+  expect(url.searchParams.has('categoria')).toBe(false);
+});
+
+test('provider signup invitation is not mistaken for a customer search',async({page})=>{
+  await installMock(page,{profiles:[]});
+  await page.goto('/?cadastro=profissional&cidade=Campinas&uf=SP&categoria=Eletricista');
+  await expect(page.locator('#search-share')).toBeHidden();
+  await expect(page.locator('#results')).toContainText('Busque por cidade ou categoria');
+  await expect(page.locator('.professional-card')).toHaveCount(0);
+});
+
+test('English mode shows accurate privacy copy and share text',async({page})=>{
+  await installMock(page);
+  await page.goto('/');
+  await page.locator('[data-perto-lang="en"]').click();
+  await page.locator('#city').fill('Brasília');
+  await page.locator('#search-button').click();
+  await expect(page.locator('#search-share')).toBeVisible();
+  await expect(page.locator('#search-copy')).toHaveText('Copy search link');
+  await expect(page.locator('#search-share')).toContainText('free-text search is never shared');
+  const message=new URL(await page.locator('#search-whatsapp').getAttribute('href')).searchParams.get('text');
+  expect(message).toContain('Know a service provider');
+});
