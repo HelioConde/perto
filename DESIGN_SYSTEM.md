@@ -59,3 +59,9 @@ Capturas: home, convite, privacidade, termos e acesso de moderação; desktop 14
 ## Limites da validação
 
 Testes simulados e screenshots não substituem cadastro com e-mail real, permissão de moderador, aprovação de profissional e orçamento entre duas contas. Esses testes operacionais permanecem separados.
+
+## Auditoria automática WCAG (rodada seguinte)
+
+Incluímos auditoria axe-core (WCAG 2.0/2.1 A e AA) via Playwright em Chromium nas cinco entradas: home, convite, termos, privacidade e moderação. A navegação para a seção English das páginas legais evita percorrer todo o texto português. Links de pular conteúdo são traduzidos em home e convite e os destinos de foco têm `tabindex=-1`.
+
+O teste automatizado detecta parte dos problemas, mas não substitui auditorias manuais com leitor de tela, teclado, zoom e contraste em dispositivos reais.

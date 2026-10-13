@@ -1191,3 +1191,35 @@ test('design: capture home, invite, legal and moderation pages using safe fixtur
     });
   }
 });
+
+
+// WCAG 2 A/AA checks run in Chromium without real account credentials or backend data.
+test('accessibility: automated WCAG checks on all public and restricted entry pages',async({page})=>{
+  const AxeBuilder=require('@axe-core/playwright').default;
+  await installMock(page,{profiles:[]});
+  for(const path of ['/','/convite.html','/privacidade.html','/termos.html','/admin.html']){
+    await page.goto(path);
+    await expect(page.locator('main')).toBeVisible();
+    const results=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa']).analyze();
+    expect(results.violations.map(v=>({rule:v.id,impact:v.impact,elements:v.nodes.map(n=>n.target).slice(0,6)})),path+' WCAG accessibility violations').toEqual([]);
+  }
+});
+
+test('accessibility: localized skip links and legal language navigation',async({page})=>{
+  await installMock(page,{profiles:[]});
+  await page.goto('/');
+  await page.locator('[data-perto-lang="en"]').click();
+  await expect(page.locator('.skip-link')).toHaveText('Skip to main content');
+  await expect(page.locator('#main-content')).toHaveAttribute('tabindex','-1');
+  await page.goto('/convite.html?lang=en');
+  await expect(page.locator('.skip-link')).toHaveText('Skip to main content');
+  for(const path of ['/privacidade.html','/termos.html']){
+    await page.goto(path);
+    await expect(page.locator('main#main-content')).toHaveAttribute('tabindex','-1');
+    await expect(page.locator('#english-version')).toHaveAttribute('lang','en');
+    await expect(page.locator('#portuguese-version')).toHaveAttribute('lang','pt-BR');
+    const jump=page.locator('.legal-language-nav a');
+    await jump.click();
+    await expect(page).toHaveURL(/#english-version$/);
+  }
+});

@@ -273,3 +273,9 @@ a:not(.button):hover{text-decoration:underline;text-underline-offset:4px}
   html{scroll-behavior:auto}
   *,*::before,*::after{scroll-behavior:auto!important;transition-duration:0.01ms!important;animation-duration:0.01ms!important}
 }
+
+/* Document language switch: English accessible without scrolling through the entire Portuguese text. */
+.legal-language-nav{display:flex;justify-content:flex-end;min-height:44px;align-items:center;margin:0 0 20px}
+.legal-language-nav a{display:inline-flex;align-items:center;min-height:44px;padding:8px 14px;border:1px solid var(--line);border-radius:12px;background:var(--soft);color:var(--accent-dark);font-weight:750;font-size:13px}
+#english-version,#portuguese-version{scroll-margin-top:24px}
+main[tabindex="-1"]:focus{outline:none}
