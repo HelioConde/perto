@@ -1,0 +1,16 @@
+name: Live Update QA
+on: { push: { branches: [main] }, pull_request: { branches: [main] } }
+jobs:
+  live-update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          test -f live-update.js
+          test -f version.json
+          test -f .github/workflows/live-version.yml
+          grep -q 'live-update.js' index.html
+          grep -q '12000' live-update.js
+          grep -q visibilitychange live-update.js
+          grep -q "cache:'no-store'" live-update.js
+          node --check live-update.js

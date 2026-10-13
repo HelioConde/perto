@@ -1,0 +1,20 @@
+.brand small{display:inline-block;margin-left:8px;padding:4px 7px;border-radius:7px;background:var(--soft);color:var(--accent);font:800 11px 'DM Sans',sans-serif;letter-spacing:0}
+.admin-main{padding:48px 0 72px}.admin-intro{max-width:740px;margin-bottom:30px}
+.admin-intro h1{margin:0;font:800 clamp(30px,5vw,47px)/1.08 Manrope,sans-serif;letter-spacing:-1.8px}
+.admin-intro>p:last-child{font-size:15px;line-height:1.65;color:var(--muted)}
+.admin-auth{max-width:800px}.admin-login{display:grid;grid-template-columns:1fr 1fr auto;align-items:end;gap:12px}
+.admin-login>.button{min-height:43px}.admin-message{min-height:20px;margin:14px 0 0;color:var(--muted);font-size:13px}
+.admin-message.error{color:var(--danger)}.admin-message.success{color:var(--accent)}
+.admin-connected{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;font-size:14px}
+.admin-session{display:block;max-width:220px;overflow-wrap:anywhere;color:var(--muted);font-size:12px}
+.admin-queue-area{margin-top:36px}.admin-queue{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.admin-card{min-width:0;padding:20px;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}
+.admin-card h3{margin:0;font:800 18px Manrope,sans-serif;overflow-wrap:anywhere}
+.admin-card .admin-category{margin:5px 0 14px;color:var(--accent);font-weight:700}
+.admin-card .admin-description{min-height:70px;margin:8px 0 14px;white-space:pre-wrap;overflow-wrap:anywhere;color:#56675b;font-size:14px;line-height:1.55}
+.admin-card dl{display:grid;gap:5px;margin:0 0 18px}.admin-card dl div{display:flex;justify-content:space-between;gap:12px}
+.admin-card dt{font-size:12px;color:var(--muted)}.admin-card dd{margin:0;font-size:13px;font-weight:700;text-align:right}
+.admin-buttons{display:flex;gap:10px;flex-wrap:wrap}.admin-buttons button{flex:1}
+.admin-buttons .reject{border:1px solid #eed5d4;background:#fff;color:var(--danger)}
+.admin-note{font-size:13px;line-height:1.5;color:var(--muted)}.admin-queue .empty-box{grid-column:1/-1}
+@media(max-width:760px){.admin-login{grid-template-columns:1fr}.admin-queue{grid-template-columns:1fr}.admin-card .admin-description{min-height:0}}

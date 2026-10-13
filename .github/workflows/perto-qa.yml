@@ -1,0 +1,45 @@
+name: Perto MVP QA
+
+on:
+  push:
+    branches: [main, split/perto]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install test dependencies
+        run: npm install --no-audit --no-fund
+      - name: Static validation
+        run: |
+          npm run check
+          grep -q 'perto_professionals' app.js
+          grep -q 'perto_requests' app.js
+          grep -q "name=\"description\"" index.html
+          grep -q 'perto_requests_active_professional_guard' supabase/migrations/20261012225500_active_professional_quote_guard.sql
+          grep -q 'revoke all privileges' supabase/migrations/20261012232000_perto_least_privilege.sql
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Browser E2E
+        run: npm run test:e2e
+      - name: Save failure details
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: perto-browser-diagnostics
+          path: |
+            test-results/
+            playwright-report/
+          if-no-files-found: ignore
+          retention-days: 7

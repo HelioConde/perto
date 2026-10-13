@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#f6f8f6">
+  <title>Moderação de profissionais — Perto</title>
+  <meta name="description" content="Área restrita para análise e aprovação de perfis profissionais no Perto.">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <a class="brand" href="./">Perto<span>.</span> <small>Admin</small></a>
+      <a class="button ghost" href="./">Voltar ao marketplace</a>
+    </header>
+    <main class="admin-main">
+      <section class="admin-intro">
+        <p class="eyebrow">ACESSO RESTRITO</p>
+        <h1>Moderação de profissionais</h1>
+        <p>Analise dados dos serviços antes da publicação. Decisões são registradas e não é permitido aprovar o próprio perfil.</p>
+      </section>
+
+      <section class="panel admin-auth" aria-labelledby="admin-auth-title">
+        <div class="panel-heading">
+          <div><p class="eyebrow">IDENTIFICAÇÃO</p><h2 id="admin-auth-title">Entrar como moderador</h2></div>
+          <span id="admin-session" class="admin-session">Sem sessão</span>
+        </div>
+        <form id="admin-login" class="admin-login">
+          <label class="field"><span>E-mail</span><input name="email" type="email" autocomplete="email" required></label>
+          <label class="field"><span>Senha</span><input name="password" type="password" minlength="8" autocomplete="current-password" required></label>
+          <button type="submit" class="button primary">Entrar com minha conta</button>
+        </form>
+        <div id="admin-connected" class="admin-connected" hidden>
+          <span>Conectado como <strong id="admin-email"></strong></span>
+          <button id="admin-logout" type="button" class="button ghost">Sair</button>
+        </div>
+        <p id="admin-message" class="admin-message" role="status" aria-live="polite">Esta área exige uma conta com permissão de moderação.</p>
+      </section>
+
+      <section id="admin-queue-area" class="admin-queue-area" hidden aria-labelledby="admin-queue-title">
+        <div class="section-heading">
+          <div><p class="eyebrow">REVISÃO MANUAL</p><h2 id="admin-queue-title">Perfis aguardando análise <span id="admin-count" class="count-badge">0</span></h2></div>
+          <button id="admin-refresh" class="button ghost" type="button">Atualizar fila</button>
+        </div>
+        <div id="admin-queue" class="admin-queue" aria-live="polite"></div>
+        <p class="admin-note">Analise o conteúdo, a categoria e a área de atendimento. A aprovação não certifica licenças profissionais ou identidade.</p>
+      </section>
+    </main>
+    <footer class="footer">
+      <strong>Perto</strong>
+      <span>Área de moderação · <a href="privacidade.html">Privacidade</a> · <a href="termos.html">Termos</a></span>
+    </footer>
+  </div>
+  <dialog id="admin-decision-dialog" class="dialog" aria-labelledby="admin-decision-title">
+    <div class="dialog-head">
+      <div><p class="eyebrow">DECISÃO DE MODERAÇÃO</p><h2 id="admin-decision-title">Revisar perfil</h2></div>
+      <button id="admin-decision-close" type="button" class="icon-button" aria-label="Fechar">×</button>
+    </div>
+    <p id="admin-decision-profile" class="dialog-copy"></p>
+    <form id="admin-decision-form">
+      <input name="profileId" type="hidden">
+      <input name="decision" type="hidden">
+      <label class="field"><span>Justificativa (obrigatória para rejeição)</span><textarea name="reason" maxlength="600" placeholder="Descreva o motivo para auditoria e revisão."></textarea></label>
+      <button type="submit" id="admin-decision-submit" class="button primary full">Confirmar decisão</button>
+      <p id="admin-decision-error" class="form-message" role="status" aria-live="polite"></p>
+    </form>
+  </dialog>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
+  <script src="supabase-config.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

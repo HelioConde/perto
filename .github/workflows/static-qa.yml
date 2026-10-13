@@ -1,0 +1,27 @@
+name: Static QA
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate frontend
+        run: |
+          set -e
+          test -f index.html
+          test -f style.css
+          test -f app.js
+          test -f supabase-config.js
+          node --check app.js
+          node --check supabase-config.js
+          grep -qi '<title' index.html
+          grep -qi 'name="description"' index.html
+          grep -qi 'rel="canonical"' index.html
+          grep -qi 'src="app.js"' index.html
+          grep -qi 'src="supabase-config.js"' index.html
+          ! grep -q 'ideias-ia-lab/07-perto-de-mim' index.html
+          ! grep -qi 'service_role' supabase-config.js

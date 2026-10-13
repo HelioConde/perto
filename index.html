@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f6f8f6">
+  <meta name="description" content="Encontre profissionais ativos por cidade e categoria e envie pedidos privados de orçamento.">
+  <meta property="og:title" content="Perto — Profissionais e serviços por cidade">
+  <meta property="og:description" content="Busque profissionais ativos, compare informações públicas e envie um pedido privado.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://helioconde.github.io/perto/">
+  <link rel="canonical" href="https://helioconde.github.io/perto/">
+  <title>Perto — Profissionais e serviços por cidade</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <a class="brand" href="./">Perto<span>.</span></a>
+      <div class="top-actions">
+        <span id="sync-status" class="sync-status" role="status" data-perto-text="searchStatus">Busca pública</span>
+        <button id="account-open" class="button ghost" type="button" data-perto-text="signIn">Entrar</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div>
+          <p class="eyebrow" data-perto-text="localEyebrow">SERVIÇOS LOCAIS</p>
+          <h1 data-perto-html="heroTitle">Procure pelo serviço.<br><span>Converse com quem atende.</span></h1>
+          <p class="hero-copy" data-perto-text="heroCopy">O Perto exibe somente perfis ativos no banco. Nenhum prestador fictício é inserido para preencher resultados.</p>
+        </div>
+        <aside class="hero-card">
+          <span data-perto-text="activePros">Profissionais ativos</span>
+          <strong id="hero-count">0</strong>
+          <small data-perto-text="available">disponíveis no catálogo agora</small>
+        </aside>
+      </section>
+
+      <section class="search-panel">
+        <div class="search-grid">
+          <label class="field">
+            <span data-perto-text="city">Cidade</span>
+            <input id="city" type="text" maxlength="100" data-perto-placeholder="cityExample" placeholder="Ex.: Brasília">
+          </label>
+          <label class="field">
+            <span data-perto-text="state">Estado</span>
+            <select id="state">
+              <option value="" data-perto-text="allStates">Todos</option>
+              <option>AC</option><option>AL</option><option>AP</option><option>AM</option>
+              <option>BA</option><option>CE</option><option>DF</option><option>ES</option>
+              <option>GO</option><option>MA</option><option>MT</option><option>MS</option>
+              <option>MG</option><option>PA</option><option>PB</option><option>PR</option>
+              <option>PE</option><option>PI</option><option>RJ</option><option>RN</option>
+              <option>RS</option><option>RO</option><option>RR</option><option>SC</option>
+              <option>SP</option><option>SE</option><option>TO</option>
+            </select>
+          </label>
+          <label class="field">
+            <span data-perto-text="category">Categoria</span>
+            <select id="category">
+              <option value="" data-perto-text="allCategories">Todas</option>
+              <option value="Eletricista" data-perto-text="categoryElectrician">Eletricista</option>
+              <option value="Encanador" data-perto-text="categoryPlumber">Encanador</option>
+              <option value="Montador" data-perto-text="categoryFurniture">Montador</option>
+              <option value="Diarista" data-perto-text="categoryCleaner">Diarista</option>
+              <option value="Reformas" data-perto-text="categoryRenovation">Reformas</option>
+              <option value="Beleza" data-perto-text="categoryBeauty">Beleza</option>
+              <option value="Aulas" data-perto-text="categoryLessons">Aulas</option>
+              <option value="Informática" data-perto-text="categoryIT">Informática</option>
+              <option value="Serviços domésticos" data-perto-text="categoryHome">Serviços domésticos</option>
+            </select>
+          </label>
+          <label class="field search-term">
+            <span data-perto-text="term">Busca</span>
+            <input id="term" type="search" maxlength="120" data-perto-placeholder="termExample" placeholder="Nome ou descrição">
+          </label>
+        </div>
+        <button id="search-button" class="button primary" type="button" data-perto-text="searchAction">Buscar profissionais</button>
+      </section>
+
+      <section class="results-section">
+        <div class="section-heading">
+          <div><p class="eyebrow" data-perto-text="resultsEyebrow">RESULTADOS</p><h2 data-perto-text="resultsTitle">Profissionais encontrados</h2></div>
+          <p id="result-summary" data-perto-text="searchToStart">Faça uma busca para começar.</p>
+        </div>
+        <div id="results" class="results"></div>
+      </section>
+
+      <section class="account-area">
+        <section class="panel">
+          <div class="panel-heading">
+            <div><p class="eyebrow" data-perto-text="clientEyebrow">PARA CLIENTES</p><h2 data-perto-text="myRequests">Meus pedidos</h2></div>
+            <div class="request-header-actions">
+              <span id="request-count" class="count-badge" aria-label="Total de pedidos">0</span>
+              <button id="request-refresh" class="button ghost" type="button" hidden data-perto-text="refreshRequests">Atualizar</button>
+            </div>
+          </div>
+          <div id="request-filters" class="request-filters" role="group" aria-label="Filtrar pedidos" hidden>
+            <button type="button" class="request-filter active" data-request-filter="all" aria-pressed="true" data-perto-text="allRequests">Todos</button>
+            <button type="button" class="request-filter" data-request-filter="sent" aria-pressed="false" data-perto-text="sentRequests">Enviados</button>
+            <button type="button" class="request-filter" data-request-filter="received" aria-pressed="false" data-perto-text="receivedRequests">Recebidos</button>
+          </div>
+          <div id="request-list" class="request-list"></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-heading">
+            <div><p class="eyebrow" data-perto-text="proEyebrow">PARA PROFISSIONAIS</p><h2 data-perto-text="myProfile">Meu perfil</h2></div>
+          </div>
+          <div id="professional-profile"></div>
+        </section>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <strong>Perto</strong>
+      <div class="footer-links"><span data-perto-text="footer">Perfis novos passam por moderação antes de aparecer na busca pública. Pedidos ficam privados entre as partes envolvidas.</span><nav aria-label="Informações legais / Legal"><a href="privacidade.html">Privacidade / Privacy</a> · <a href="termos.html">Termos / Terms</a></nav></div>
+    </footer>
+  </div>
+
+  <dialog id="request-dialog" class="dialog" aria-labelledby="request-title">
+    <div class="dialog-head">
+      <div><p class="eyebrow" data-perto-text="quoteEyebrow">PEDIDO DE ORÇAMENTO</p><h2 id="request-title" data-perto-text="quoteTitle">Falar com profissional</h2></div>
+      <button id="request-close" class="icon-button" type="button" aria-label="Fechar" data-perto-aria="close">×</button>
+    </div>
+    <div id="request-professional" class="request-professional"></div>
+    <form id="request-form">
+      <input name="professionalId" type="hidden">
+      <input name="category" type="hidden">
+      <input name="city" type="hidden">
+      <label class="field"><span data-perto-text="replyContact">Contato para retorno</span><input name="contact" maxlength="200" data-perto-placeholder="contactExample" placeholder="WhatsApp ou e-mail" required></label>
+      <label class="field"><span data-perto-text="explainNeed">Explique o que precisa</span><textarea name="message" maxlength="1600" data-perto-placeholder="needExample" placeholder="Ex.: Preciso instalar duas tomadas e revisar um disjuntor..." required></textarea></label>
+      <button class="button primary full" type="submit" data-perto-text="sendQuote">Enviar pedido privado</button>
+      <p id="request-message" class="form-message" role="status" aria-live="polite"></p>
+    </form>
+  </dialog>
+
+  <dialog id="profile-dialog" class="dialog" aria-labelledby="profile-title">
+    <div class="dialog-head">
+      <div><p class="eyebrow" data-perto-text="profileEyebrow">PERFIL PROFISSIONAL</p><h2 id="profile-title" data-perto-text="createProfile">Cadastrar serviço</h2></div>
+      <button id="profile-close" class="icon-button" type="button" aria-label="Fechar" data-perto-aria="close">×</button>
+    </div>
+    <p class="dialog-copy" data-perto-html="moderationCopy">Novos perfis entram como <strong>pendentes</strong> e não aparecem publicamente até moderação.</p>
+    <form id="profile-form">
+      <label class="field"><span data-perto-text="professionalName">Nome profissional</span><input name="displayName" maxlength="120" required data-perto-placeholder="nameExample" placeholder="Ex.: João Elétrica"></label>
+      <div class="form-grid">
+        <label class="field"><span data-perto-text="city">Cidade</span><input name="city" maxlength="100" required></label>
+        <label class="field"><span data-perto-text="state">Estado</span><select name="state" required>
+          <option value="" data-perto-text="select">Selecione</option>
+          <option>AC</option><option>AL</option><option>AP</option><option>AM</option>
+          <option>BA</option><option>CE</option><option>DF</option><option>ES</option>
+          <option>GO</option><option>MA</option><option>MT</option><option>MS</option>
+          <option>MG</option><option>PA</option><option>PB</option><option>PR</option>
+          <option>PE</option><option>PI</option><option>RJ</option><option>RN</option>
+          <option>RS</option><option>RO</option><option>RR</option><option>SC</option>
+          <option>SP</option><option>SE</option><option>TO</option>
+        </select></label>
+      </div>
+      <label class="field"><span data-perto-text="category">Categoria</span><input name="category" maxlength="100" required placeholder="Ex.: Eletricista"></label>
+      <label class="field"><span data-perto-text="serviceDescription">Descrição do serviço</span><textarea name="description" maxlength="1200" required data-perto-placeholder="descriptionExample" placeholder="Descreva o que você faz e sua área de atendimento."></textarea></label>
+      <label class="field"><span data-perto-text="priceFrom">Preço a partir de (opcional)</span><input name="priceFrom" type="number" min="0" step="0.01" data-perto-placeholder="priceExample" placeholder="Ex.: 80"></label>
+      <button class="button primary full" type="submit" data-perto-text="saveProfile">Salvar perfil</button>
+      <p id="profile-message" class="form-message" role="status" aria-live="polite"></p>
+    </form>
+  </dialog>
+
+  <dialog id="account-dialog" class="dialog account-dialog" aria-labelledby="account-title">
+    <div class="dialog-head">
+      <div><p class="eyebrow" data-perto-text="accountEyebrow">SUA CONTA</p><h2 id="account-title" data-perto-text="accountTitle">Entrar no Perto</h2></div>
+      <button id="account-close" class="icon-button" type="button" aria-label="Fechar" data-perto-aria="close">×</button>
+    </div>
+    <p class="dialog-copy" data-perto-text="accountCopy">A busca pública não exige conta. Conta é necessária para enviar pedidos ou cadastrar perfil profissional.</p>
+    <form id="auth-form">
+      <label class="field"><span data-perto-text="email">E-mail</span><input name="email" type="email" autocomplete="email" required></label>
+      <label class="field"><span data-perto-text="password">Senha</span><input name="password" type="password" minlength="8" autocomplete="current-password" required></label>
+      <button class="button primary full" type="submit" data-perto-text="signIn">Entrar</button>
+      <div class="account-actions">
+        <button id="sign-up" class="button ghost" type="button" data-perto-text="createAccount">Criar conta</button>
+        <button id="reset-password" class="button text" type="button" data-perto-text="forgotPassword">Esqueci a senha</button>
+      </div>
+    </form>
+    <div id="account-profile" hidden>
+      <p><span data-perto-text="connectedAs">Conectado como</span> <strong id="account-email"></strong></p>
+      <button id="sign-out" class="button ghost full" type="button" data-perto-text="signOut">Sair da conta</button>
+    </div>
+    <p id="account-message" class="form-message" role="status" aria-live="polite"></p>
+  </dialog>
+
+  <dialog id="password-dialog" class="dialog account-dialog" aria-labelledby="password-title">
+    <div class="dialog-head">
+      <div><p class="eyebrow" data-perto-text="passwordRecoveryEyebrow">RECUPERAÇÃO DE CONTA</p><h2 id="password-title" data-perto-text="newPasswordTitle">Criar nova senha</h2></div>
+      <button id="password-close" class="icon-button" type="button" aria-label="Fechar" data-perto-aria="close">×</button>
+    </div>
+    <p class="dialog-copy" data-perto-text="newPasswordHelp">Escolha uma nova senha com pelo menos 8 caracteres.</p>
+    <form id="new-password-form">
+      <label class="field"><span data-perto-text="newPassword">Nova senha</span><input name="password" type="password" minlength="8" autocomplete="new-password" required></label>
+      <label class="field"><span data-perto-text="confirmNewPassword">Confirmar senha</span><input name="confirmPassword" type="password" minlength="8" autocomplete="new-password" required></label>
+      <button type="submit" class="button primary full" data-perto-text="saveNewPassword">Atualizar senha</button>
+      <p id="password-message" class="form-message" role="status" aria-live="polite"></p>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
+  <script src="supabase-config.js"></script>
+  <script src="i18n.js"></script>
+  <script src="app.js"></script>
+  <script src="live-update.js" defer></script>
+</body>
+</html>
