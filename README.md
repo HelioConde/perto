@@ -53,3 +53,11 @@ A primeira abordagem é concentrar o lançamento em **uma cidade e uma ou duas c
 - Próximo gate: validar com contas reais, escolher região piloto, convidar cerca de 20 prestadores com consentimento e medir solicitações reais antes de investir em anúncios.
 
 Para consultar a checklist de publicação/autenticação e limites do MVP, veja [DEPLOY.md](DEPLOY.md).
+
+## Convites e cadastro sem perda de contexto
+
+- Visitantes que começam a contratar por um link `?profissional=UUID` e precisam entrar recebem um redirecionamento de confirmação **restrito ao próprio Perto**, preservando a ficha do profissional e o pedido pendente.
+- O botão de cadastro de prestador ativa `cadastro=profissional`; depois de confirmar o e-mail ou entrar numa conta existente, o editor de perfil abre quando ainda não existe perfil.
+- Nenhum pedido ou perfil é criado automaticamente: o usuário precisa preencher e enviar o formulário.
+- A recuperação de senha segue para o endereço base, sem carregar redirecionamentos de terceiros.
+- **QA do onboarding:** 68 testes Playwright aprovados em [Perto MVP QA](https://github.com/HelioConde/perto/actions/runs/38363431044), incluindo retornos de confirmação, proteção de links e fluxo em dispositivos móveis.
