@@ -13,10 +13,10 @@ const pendingProfile = {
   display_name: 'Perfil ainda pendente', status: 'pending'
 };
 
-async function installMock(page, { user = null, profiles = [activeProfile, pendingProfile], requests = [] } = {}) {
+async function installMock(page, { user = null, loginUser = null, profiles = [activeProfile, pendingProfile], requests = [] } = {}) {
   await page.route('https://cdn.jsdelivr.net/**', route => route.abort());
-  await page.addInitScript(({ user, profiles, requests }) => {
-    const state = { user, profiles, requests, inserted: [], updated: [], rpcCalls: [], authCalls: [], authCallback: null, failNextRequestsLoad: false, errors: [] };
+  await page.addInitScript(({ user, loginUser, profiles, requests }) => {
+    const state = { user, loginUser, profiles, requests, inserted: [], updated: [], rpcCalls: [], authCalls: [], authCallback: null, failNextRequestsLoad: false, errors: [] };
     window.__pertoTest = state;
     function query(table) {
       const opts = { mode: 'read', filters: [], limit: 100 };
@@ -111,7 +111,12 @@ async function installMock(page, { user = null, profiles = [activeProfile, pendi
       auth: {
         getSession: async () => ({ data: { session: state.user ? { user: state.user } : null }, error: null }),
         onAuthStateChange: callback => { state.authCallback = callback; return { data: { subscription: { unsubscribe() {} } } }; },
-        signInWithPassword: async () => ({ error: { message: 'Not a real account' } }),
+        signInWithPassword: async () => {
+          if (!state.loginUser) return { error: { message: 'Not a real account' } };
+          state.user=state.loginUser;
+          if (state.authCallback) state.authCallback('SIGNED_IN',{ user:state.loginUser });
+          return { error:null, data:{ user:state.loginUser } };
+        },
         signUp: async options => { state.authCalls.push({ type: 'signUp', options }); return { data: { session: null }, error: null }; },
         resetPasswordForEmail: async (email, options) => { state.authCalls.push({ type: 'reset', email, options }); return { error: null }; },
         updateUser: async options => { state.authCalls.push({ type: 'updateUser', options }); return { error: null }; },
@@ -119,7 +124,7 @@ async function installMock(page, { user = null, profiles = [activeProfile, pendi
       }
     };
     window.supabase = { createClient: () => client };
-  }, { user, profiles, requests });
+  }, { user, loginUser, profiles, requests });
 }
 
 test('filters public active profiles and does not show pending profiles', async ({ page }) => {
@@ -519,4 +524,78 @@ test('provider invitation and public share actions are available in English', as
   await expect(page.locator('.professional-card .share-profile')).toHaveText('Share on WhatsApp');
   const message=new URL(await page.locator('.professional-card .share-profile').getAttribute('href')).searchParams.get('text');
   expect(message).toContain('Meet Ana Eletricista');
+});
+
+
+test('provider signup via invitation keeps the intent in confirmation email and opens profile editor after login', async ({ page }) => {
+  const newUser={id:'34343434-3434-4434-8434-343434343434',email:'novo@example.test'};
+  await installMock(page,{loginUser:newUser,profiles:[activeProfile]});
+  await page.goto('/#para-profissionais');
+  await page.locator('#register-professional').click();
+  await expect(page.locator('#account-dialog')).toBeVisible();
+  await expect(page).toHaveURL(/cadastro=profissional/);
+  await page.locator('#auth-form [name="email"]').fill('novo@example.test');
+  await page.locator('#auth-form [name="password"]').fill('senha-forte-123');
+  await page.locator('#sign-up').click();
+  const signup = await page.evaluate(() => window.__pertoTest.authCalls.find(x=>x.type==='signUp'));
+  expect(new URL(signup.options.options.emailRedirectTo).searchParams.get('cadastro')).toBe('profissional');
+  expect(new URL(signup.options.options.emailRedirectTo).hash).toBe('#para-profissionais');
+  await page.locator('#auth-form button[type="submit"]').click();
+  await expect(page.locator('#profile-dialog')).toBeVisible();
+  await expect(page.locator('#account-dialog')).toBeHidden();
+  await expect(page.locator('#profile-title')).toHaveText('Cadastrar serviço');
+  expect(new URL(page.url()).searchParams.has('cadastro')).toBe(false);
+  expect(await page.evaluate(() => window.__pertoTest.inserted.filter(p=>p.table==='perto_professionals').length)).toBe(0);
+});
+
+test('returning from provider confirmation preserves onboarding on a fresh visit', async ({ page }) => {
+  const registered={id:'45454545-4545-4454-8454-454545454545',email:'retorno@example.test'};
+  await installMock(page,{user:registered,profiles:[activeProfile]});
+  await page.goto('/?cadastro=profissional#para-profissionais');
+  await expect(page.locator('#profile-dialog')).toBeVisible();
+  await expect(page.locator('#account-dialog')).toBeHidden();
+  expect(new URL(page.url()).searchParams.has('cadastro')).toBe(false);
+});
+
+test('shared quote request survives signup link and resumes after customer login', async ({ page }) => {
+  const returningCustomer={id:'56565656-5656-4565-8565-565656565656',email:'cliente-novo@example.test'};
+  await installMock(page,{loginUser:returningCustomer,profiles:[activeProfile]});
+  await page.goto('/?profissional='+activeProfile.id);
+  await expect(page.locator('.professional-card')).toHaveCount(1);
+  await page.locator('[data-request]').click();
+  await expect(page.locator('#account-dialog')).toBeVisible();
+  await expect(page).toHaveURL(/pedido=1/);
+  await page.locator('#auth-form [name="email"]').fill('cliente-novo@example.test');
+  await page.locator('#auth-form [name="password"]').fill('senha-forte-123');
+  await page.locator('#sign-up').click();
+  const signup=await page.evaluate(() => window.__pertoTest.authCalls.find(x=>x.type==='signUp'));
+  const redirect=new URL(signup.options.options.emailRedirectTo);
+  expect(redirect.searchParams.get('pedido')).toBe('1');
+  expect(redirect.searchParams.get('profissional')).toBe(activeProfile.id);
+  await page.locator('#auth-form button[type="submit"]').click();
+  await expect(page.locator('#request-dialog')).toBeVisible();
+  await expect(page.locator('#request-professional')).toContainText('Ana Eletricista');
+  await expect(page.locator('#account-dialog')).toBeHidden();
+  expect(new URL(page.url()).searchParams.has('pedido')).toBe(false);
+});
+
+test('returning customer is sent back to shared professional and not to unrelated directory result', async ({ page }) => {
+  const returningCustomer={id:'67676767-6767-4676-8676-676767676767',email:'pedido@example.test'};
+  await installMock(page,{user:returningCustomer,profiles:[activeProfile,pendingProfile]});
+  await page.goto('/?profissional='+activeProfile.id+'&pedido=1');
+  await expect(page.locator('#request-dialog')).toBeVisible();
+  await expect(page.locator('#request-professional')).toContainText('Ana Eletricista');
+  await expect(page.locator('.professional-card')).toHaveCount(1);
+  expect(new URL(page.url()).searchParams.has('pedido')).toBe(false);
+});
+
+test('maliciously invented intent parameters are stripped from confirmation redirects', async ({ page }) => {
+  await installMock(page,{profiles:[activeProfile]});
+  await page.goto('/?profissional=not-a-uuid&pedido=1&redirect=https%3A%2F%2Fevil.test%2F');
+  await page.locator('#account-open').click();
+  await page.locator('#auth-form [name="email"]').fill('visitante@example.test');
+  await page.locator('#auth-form [name="password"]').fill('senha-forte-123');
+  await page.locator('#sign-up').click();
+  const signup=await page.evaluate(() => window.__pertoTest.authCalls.find(x=>x.type==='signUp'));
+  expect(signup.options.options.emailRedirectTo).toBe('http://127.0.0.1:4179/');
 });
