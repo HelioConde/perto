@@ -1316,3 +1316,71 @@ test('accessibility: editor close button stays accessible when mobile dialog is 
   await expect(dialog).toBeHidden();
   expect(await page.evaluate(()=>window.__pertoTest.inserted)).toHaveLength(0);
 });
+
+
+test('quote validation: whitespace-only contact is announced and never submitted',async({page})=>{
+  const user={id:'f1111111-1111-4111-8111-111111111111',email:'cliente@example.test'};
+  await installMock(page,{user,profiles:[activeProfile]});
+  await page.goto('/?profissional='+activeProfile.id);
+  await page.locator('[data-request]').click();
+  await expect(page.locator('#request-dialog')).toBeVisible();
+  const contact=page.locator('#request-form [name="contact"]');
+  await contact.fill('        ');
+  await page.locator('#request-form [name="message"]').fill('Preciso trocar duas tomadas na cozinha.');
+  await page.locator('#request-form button[type="submit"]').click();
+  await expect(contact).toHaveAttribute('aria-invalid','true');
+  await expect(contact).toHaveAttribute('aria-describedby','request-message');
+  await expect(contact).toBeFocused();
+  await expect(page.locator('#request-message')).toContainText('contato válido');
+  expect(await page.evaluate(()=>window.__pertoTest.inserted)).toHaveLength(0);
+  await contact.fill('cliente@example.test');
+  await expect(contact).not.toHaveAttribute('aria-invalid');
+  await expect(contact).not.toHaveAttribute('aria-describedby');
+  await expect(page.locator('#request-message')).toHaveText('');
+});
+
+test('quote validation: whitespace-only service message is blocked before backend',async({page})=>{
+  const user={id:'f2222222-2222-4222-8222-222222222222',email:'cliente@example.test'};
+  await installMock(page,{user,profiles:[activeProfile]});
+  await page.goto('/?profissional='+activeProfile.id);
+  await page.locator('[data-request]').click();
+  await page.locator('#request-form [name="contact"]').fill('cliente@example.test');
+  const message=page.locator('#request-form [name="message"]');
+  await message.fill('                  ');
+  await page.locator('#request-form button[type="submit"]').click();
+  await expect(message).toHaveAttribute('aria-invalid','true');
+  await expect(message).toBeFocused();
+  await expect(page.locator('#request-message')).toContainText('pelo menos 10 caracteres');
+  expect(await page.evaluate(()=>window.__pertoTest.inserted)).toHaveLength(0);
+});
+
+test('quote validation: valid corrected details submit exactly one private request',async({page})=>{
+  const user={id:'f3333333-3333-4333-8333-333333333333',email:'cliente@example.test'};
+  await installMock(page,{user,profiles:[activeProfile]});
+  await page.goto('/?profissional='+activeProfile.id);
+  await page.locator('[data-request]').click();
+  await page.locator('#request-form [name="contact"]').fill('        ');
+  await page.locator('#request-form [name="message"]').fill('Preciso revisar um disjuntor do apartamento.');
+  await page.locator('#request-form button[type="submit"]').click();
+  await expect(page.locator('#request-form [name="contact"]')).toHaveAttribute('aria-invalid','true');
+  await page.locator('#request-form [name="contact"]').fill('cliente@example.test');
+  await page.locator('#request-form button[type="submit"]').click();
+  await expect(page.locator('#request-dialog')).toBeHidden();
+  const sent=await page.evaluate(()=>window.__pertoTest.inserted.filter(x=>x.table==='perto_requests'));
+  expect(sent).toHaveLength(1);
+  expect(sent[0].payload.contact).toBe('cliente@example.test');
+  expect(sent[0].payload.message).toContain('Preciso revisar um disjuntor');
+});
+
+test('quote validation: English feedback is localized',async({page})=>{
+  const user={id:'f4444444-4444-4444-8444-444444444444',email:'customer@example.test'};
+  await installMock(page,{user,profiles:[activeProfile]});
+  await page.goto('/?profissional='+activeProfile.id);
+  await page.locator('[data-perto-lang="en"]').click();
+  await page.locator('[data-request]').click();
+  await page.locator('#request-form [name="contact"]').fill('customer@example.test');
+  await page.locator('#request-form [name="message"]').fill('          ');
+  await page.locator('#request-form button[type="submit"]').click();
+  await expect(page.locator('#request-message')).toContainText('at least 10 characters');
+  expect(await page.evaluate(()=>window.__pertoTest.inserted)).toHaveLength(0);
+});

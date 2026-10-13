@@ -584,8 +584,31 @@ document.querySelector('#register-professional').addEventListener('click',()=>{
 
 document.querySelector('#request-close').addEventListener('click',()=>requestDialog.close());
 requestDialog.addEventListener('click',e=>{if(e.target===requestDialog)requestDialog.close();});
+function quoteFormIssue(){
+  const contact=requestForm.elements.contact.value.trim();
+  const message=requestForm.elements.message.value.trim();
+  if(contact.length<5)return {field:'contact',key:'quoteInvalidContact'};
+  if(message.length<10)return {field:'message',key:'quoteInvalidMessage'};
+  return null;
+}
+requestForm.addEventListener('input',event=>{
+  const field=event.target;
+  if(!['contact','message'].includes(field.name)||field.getAttribute('aria-invalid')!=='true')return;
+  field.removeAttribute('aria-invalid');
+  field.removeAttribute('aria-describedby');
+  requestMessage.textContent='';
+});
 requestForm.addEventListener('submit',async event=>{
   event.preventDefault();if(!currentUser||!requestForm.reportValidity())return;
+  const issue=quoteFormIssue();
+  if(issue){
+    const field=requestForm.elements[issue.field];
+    requestMessage.textContent=T(issue.key);
+    field.setAttribute('aria-invalid','true');
+    field.setAttribute('aria-describedby','request-message');
+    field.focus();
+    return;
+  }
   const b=requestForm.querySelector('[type="submit"]');b.disabled=true;requestMessage.textContent=T('sending');
   try{await sendRequest();requestDialog.close();renderRequestList();showToast(T('quoteSent'));}
   catch(error){

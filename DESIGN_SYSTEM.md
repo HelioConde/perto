@@ -73,3 +73,7 @@ Além de títulos nomeados por `aria-labelledby`, as janelas de login, perfil pr
 ## Continuidade do foco nos formulários móveis
 
 Os títulos e botões de fechamento dos diálogos são mantidos visíveis durante a rolagem do formulário, inclusive em telas curtas. Ao detectar erro de conteúdo no cadastro profissional, a interface associa a mensagem de validação ao campo com `aria-invalid` e `aria-describedby`, move o foco para o campo, e retira a indicação de erro quando ele é corrigido. Os comportamentos são testados no Playwright.
+
+## Validação acessível de pedidos de orçamento
+
+O formulário de orçamento rejeita contatos e mensagens compostos apenas por espaços, sem enviar esses dados à API. O campo inválido recebe foco e `aria-invalid`/`aria-describedby` apontando para o feedback localizado PT-BR/EN; quando editado, o estado de erro é removido. A verificação não substitui as políticas RLS e anti-spam do servidor.
