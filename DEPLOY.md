@@ -137,3 +137,12 @@ A nova tela de alteração de senha reage ao evento `PASSWORD_RECOVERY` e utiliz
 - A seção de convite explica que não existe promessa de clientes; quem compartilha escolhe voluntariamente abrir o WhatsApp. Nenhum marketing de disparo automático foi incluído.
 - Verificar com usuários reais o fluxo: profissional cadastra → moderação aprova → profissional compartilha → cliente abre link → login → orçamento.
 - Validar com 1 cidade piloto e categorias com oferta real, sem criar páginas doorway, e verificar textos LGPD e canal de contato antes de campanha de tráfego público.
+
+## 13. Retomada segura após convite, login e confirmação
+
+- Cadastro de profissional: clicar em **Cadastrar meu serviço** preserva `cadastro=profissional` na URL e em `emailRedirectTo`; após autenticação, abre o formulário caso o usuário ainda não tenha perfil.
+- Pedido por link público: clicar em **Pedir orçamento** sem conta preserva apenas `profissional=UUID` e `pedido=1` no `emailRedirectTo`; após autenticação, retorna ao mesmo pedido, sem preencher ou enviar dados automaticamente.
+- Validação de parâmetros impede incluir links externos no redirecionamento de autenticação. Os links são sempre relativos à própria instalação.
+- O `redirectTo` de recuperação de senha continua apontando ao endereço base da aplicação.
+- Testes automáticos em navegador (mock de autenticação) concluíram com **68 aprovações** na execução [38363431044](https://github.com/HelioConde/perto/actions/runs/38363431044).
+- **Atenção:** antes de convidar prestadores reais, autorizar `https://helioconde.github.io/perto/**` em Supabase Auth → URL Configuration → Redirect URLs e homologar confirmação por e-mail/recuperação com contas reais.
