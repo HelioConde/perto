@@ -279,3 +279,17 @@ a:not(.button):hover{text-decoration:underline;text-underline-offset:4px}
 .legal-language-nav a{display:inline-flex;align-items:center;min-height:44px;padding:8px 14px;border:1px solid var(--line);border-radius:12px;background:var(--soft);color:var(--accent-dark);font-weight:750;font-size:13px}
 #english-version,#portuguese-version{scroll-margin-top:24px}
 main[tabindex="-1"]:focus{outline:none}
+
+/* Keep the form close control in reach when tall dialogs scroll on short mobile viewports. */
+.dialog .dialog-head{
+  position:sticky;
+  top:-1px;
+  z-index:2;
+  padding:10px 0 12px;
+  border-bottom:1px solid var(--line);
+  background:var(--card);
+}
+.dialog .field [aria-invalid="true"]{
+  border-color:#9d382d;
+  box-shadow:0 0 0 2px rgba(157,56,45,.13);
+}

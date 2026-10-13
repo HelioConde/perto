@@ -1286,3 +1286,33 @@ test('accessibility: password recovery dialog is reachable and passes WCAG check
   await expect(page.locator('#password-dialog')).toHaveAttribute('aria-describedby','password-dialog-help');
   await page.screenshot({path:testInfo.outputPath('dialog-password-'+testInfo.project.name+'.png'),animations:'disabled'});
 });
+
+
+test('accessibility: invalid provider input is announced and clears after correction',async({page})=>{
+  await prepareValidatedProfileForm(page);
+  const description=page.locator('#profile-form [name="description"]');
+  await description.fill('    ');
+  await page.locator('#profile-form [type="submit"]').click();
+  await expect(description).toHaveAttribute('aria-invalid','true');
+  await expect(description).toHaveAttribute('aria-describedby','profile-message');
+  await expect(description).toBeFocused();
+  await expect(page.locator('#profile-message')).toContainText('15 caracteres');
+  expect(await page.evaluate(()=>window.__pertoTest.inserted)).toHaveLength(0);
+  await description.fill('Pequenas instalações e manutenção elétrica residencial.');
+  await expect(description).not.toHaveAttribute('aria-invalid');
+  await expect(description).not.toHaveAttribute('aria-describedby');
+  await expect(page.locator('#profile-message')).toHaveText('');
+});
+
+test('accessibility: editor close button stays accessible when mobile dialog is scrolled to bottom',async({page})=>{
+  await page.setViewportSize({width:390,height:600});
+  await prepareValidatedProfileForm(page);
+  const dialog=page.locator('#profile-dialog');
+  await expect(dialog).toBeVisible();
+  const scrolled=await dialog.evaluate(el=>{el.scrollTop=el.scrollHeight;return el.scrollTop;});
+  expect(scrolled).toBeGreaterThan(50);
+  await expect(page.locator('#profile-close')).toBeInViewport();
+  await page.locator('#profile-close').click();
+  await expect(dialog).toBeHidden();
+  expect(await page.evaluate(()=>window.__pertoTest.inserted)).toHaveLength(0);
+});

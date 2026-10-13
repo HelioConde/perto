@@ -348,6 +348,10 @@ function renderProfile(){
 function openProfileEditor(){
   if(!currentUser)return;
   profileForm.reset();
+  profileForm.querySelectorAll('[aria-invalid="true"]').forEach(field=>{
+    field.removeAttribute('aria-invalid');
+    field.removeAttribute('aria-describedby');
+  });
   if(currentProfile){
     profileForm.elements.displayName.value=currentProfile.display_name||'';
     profileForm.elements.city.value=currentProfile.city||'';
@@ -637,12 +641,24 @@ profileBox.addEventListener('click',event=>{
 });
 document.querySelector('#profile-close').addEventListener('click',()=>profileDialog.close());
 profileDialog.addEventListener('click',e=>{if(e.target===profileDialog)profileDialog.close();});
+function clearProfileFieldError(event){
+  const field=event.target;
+  if(!field?.hasAttribute?.('aria-invalid'))return;
+  field.removeAttribute('aria-invalid');
+  field.removeAttribute('aria-describedby');
+  profileMessage.textContent='';
+}
+profileForm.addEventListener('input',clearProfileFieldError);
+profileForm.addEventListener('change',clearProfileFieldError);
 profileForm.addEventListener('submit',async event=>{
   event.preventDefault();if(!currentUser||!profileForm.reportValidity())return;
   const invalid=profileFormError(Object.fromEntries(new FormData(profileForm)));
   if(invalid){
     profileMessage.textContent=T(invalid.key);
-    profileForm.elements[invalid.field].focus();
+    const field=profileForm.elements[invalid.field];
+    field.setAttribute('aria-invalid','true');
+    field.setAttribute('aria-describedby','profile-message');
+    field.focus();
     return;
   }
   const b=profileForm.querySelector('[type="submit"]');b.disabled=true;profileMessage.textContent=T('savingProfile');

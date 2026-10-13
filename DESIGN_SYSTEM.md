@@ -69,3 +69,7 @@ O teste automatizado detecta parte dos problemas, mas não substitui auditorias 
 ## Diálogos explicáveis por leitor de tela
 
 Além de títulos nomeados por `aria-labelledby`, as janelas de login, perfil profissional, orçamento, recuperação de senha e moderação agora relacionam explicitamente o contexto de cada formulário por `aria-describedby`. A associação é verificada no Playwright para todas as cinco janelas nos projetos desktop e mobile. Esse refinamento melhora a leitura de contexto, mas a homologação completa com leitor de tela real permanece uma etapa manual.
+
+## Continuidade do foco nos formulários móveis
+
+Os títulos e botões de fechamento dos diálogos são mantidos visíveis durante a rolagem do formulário, inclusive em telas curtas. Ao detectar erro de conteúdo no cadastro profissional, a interface associa a mensagem de validação ao campo com `aria-invalid` e `aria-describedby`, move o foco para o campo, e retira a indicação de erro quando ele é corrigido. Os comportamentos são testados no Playwright.
