@@ -1060,3 +1060,77 @@ test('successful login clears a previously displayed confirmation notice',async(
   await page.locator('#auth-form button[type="submit"]').click();
   await expect(page.locator('#email-confirmation-help')).toBeHidden();
 });
+
+
+async function prepareValidatedProfileForm(page){
+  const testUser={id:'11112222-3333-4444-8555-666677778888',email:'profissional-teste@example.test'};
+  await installMock(page,{user:testUser,profiles:[]});
+  await page.goto('/');
+  await page.locator('#register-professional').click();
+  await expect(page.locator('#profile-dialog')).toBeVisible();
+  await page.locator('#profile-form [name="displayName"]').fill('Maria Serviços');
+  await page.locator('#profile-form [name="city"]').fill('Campinas');
+  await page.locator('#profile-form [name="state"]').selectOption('SP');
+  await page.locator('#profile-form [name="category"]').selectOption('Eletricista');
+  await page.locator('#profile-form [name="description"]').fill('Serviços residenciais e manutenção elétrica');
+}
+
+test('rejects a whitespace-only professional name before sending a listing',async({page})=>{
+  await prepareValidatedProfileForm(page);
+  await page.locator('#profile-form [name="displayName"]').fill('    ');
+  await page.locator('#profile-form [type="submit"]').click();
+  await expect(page.locator('#profile-message')).toContainText('nome profissional válido');
+  await expect(page.locator('#profile-dialog')).toBeVisible();
+  expect(await page.evaluate(()=>window.__pertoTest.inserted)).toHaveLength(0);
+});
+
+test('rejects a whitespace-only city before sending a listing',async({page})=>{
+  await prepareValidatedProfileForm(page);
+  await page.locator('#profile-form [name="city"]').fill('    ');
+  await page.locator('#profile-form [type="submit"]').click();
+  await expect(page.locator('#profile-message')).toContainText('nome de uma cidade');
+  expect(await page.evaluate(()=>window.__pertoTest.inserted)).toHaveLength(0);
+});
+
+test('rejects a description consisting only of whitespace before sending a listing',async({page})=>{
+  await prepareValidatedProfileForm(page);
+  await page.locator('#profile-form [name="description"]').fill('                 ');
+  await page.locator('#profile-form [type="submit"]').click();
+  await expect(page.locator('#profile-message')).toContainText('pelo menos 15 caracteres');
+  expect(await page.evaluate(()=>window.__pertoTest.inserted)).toHaveLength(0);
+});
+
+test('rejects a too-short description before contacting Supabase',async({page})=>{
+  await prepareValidatedProfileForm(page);
+  await page.locator('#profile-form [name="description"]').fill('Reparos');
+  await page.locator('#profile-form [type="submit"]').click();
+  await expect(page.locator('#profile-message')).toContainText('pelo menos 15 caracteres');
+  expect(await page.evaluate(()=>window.__pertoTest.inserted)).toHaveLength(0);
+});
+
+test('avoids a database integer overflow for exceptionally large optional prices',async({page})=>{
+  await prepareValidatedProfileForm(page);
+  await page.locator('#profile-form [name="priceFrom"]').fill('21474836.48');
+  await page.locator('#profile-form [type="submit"]').click();
+  await expect(page.locator('#profile-message')).toContainText('preço não negativo');
+  expect(await page.evaluate(()=>window.__pertoTest.inserted)).toHaveLength(0);
+});
+
+test('valid zero starting price still submits as integer cents',async({page})=>{
+  await prepareValidatedProfileForm(page);
+  await page.locator('#profile-form [name="priceFrom"]').fill('0');
+  await page.locator('#profile-form [type="submit"]').click();
+  await expect(page.locator('#profile-dialog')).toBeHidden();
+  const inserted=await page.evaluate(()=>window.__pertoTest.inserted.find(x=>x.table==='perto_professionals'));
+  expect(inserted.payload.price_from_cents).toBe(0);
+  expect(inserted.payload.description).toBe('Serviços residenciais e manutenção elétrica');
+});
+
+test('profile validation feedback follows the English language',async({page})=>{
+  await prepareValidatedProfileForm(page);
+  await page.locator('[data-perto-lang="en"]').click();
+  await page.locator('#profile-form [name="displayName"]').fill(' ');
+  await page.locator('#profile-form [type="submit"]').click();
+  await expect(page.locator('#profile-message')).toContainText('valid business name');
+  expect(await page.evaluate(()=>window.__pertoTest.inserted)).toHaveLength(0);
+});

@@ -107,3 +107,7 @@ A home mostra contagem real de anúncios ativos: durante a consulta exibe um tra
 ## Orientação de e-mail
 
 Na primeira inscrição, se a conta precisar confirmar e-mail, há instruções de caixa de entrada/spam e um botão voluntário de **reenviar confirmação**. Também aparece para erro explícito de login `Email not confirmed`. O reenvio preserva a intenção de inscrição/solicitação, sem URLs de terceiros, e possui bloqueio local de 60 segundos após resposta bem-sucedida. O funcionamento real depende dos Redirect URLs configurados no Supabase compartilhado e de homologação com e-mail verdadeiro.
+
+## Validação dos primeiros cadastros reais
+
+Os perfis profissionais têm validação dupla: navegador (com mensagens PT-BR/EN) e **regras CHECK no PostgreSQL** para nome, cidade, UF, categoria e descrição. Espaços em branco não são tratados como anúncios válidos; os campos principais precisam ter conteúdo útil. O preço opcional é verificado antes do envio para não exceder a capacidade do campo integer de centavos. A categoria personalizada histórica de um perfil já existente continua sendo preservada quando editada. Nenhum profissional foi criado como parte desta migração.

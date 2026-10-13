@@ -412,6 +412,34 @@ async function refreshOwnProfile(){
   }
 }
 
+function profileFormError(values){
+  const rules=[
+    {field:'displayName',key:'profileInvalidName',min:2,max:120},
+    {field:'city',key:'profileInvalidCity',min:2,max:100},
+    {field:'category',key:'profileInvalidCategory',min:2,max:100},
+    {field:'description',key:'profileInvalidDescription',min:15,max:1200}
+  ];
+  for(const rule of rules){
+    const cleaned=String(values[rule.field]||'').trim();
+    if(cleaned.length<rule.min||cleaned.length>rule.max){
+      return {field:rule.field,key:rule.key};
+    }
+  }
+  const state=String(values.state||'').toUpperCase();
+  if(!Array.from(profileForm.elements.state.options).some(option=>option.value===state&&state)){
+    return {field:'state',key:'profileInvalidState'};
+  }
+  const rawPrice=String(values.priceFrom||'').trim();
+  if(rawPrice!==''){
+    const value=Number(rawPrice);
+    const cents=Math.round(value*100);
+    if(!Number.isFinite(value)||value<0||value>21474836.47||!Number.isSafeInteger(cents)){
+      return {field:'priceFrom',key:'profileInvalidPrice'};
+    }
+  }
+  return null;
+}
+
 async function saveProfile(){
   const values=Object.fromEntries(new FormData(profileForm));
   const price=values.priceFrom===''?null:Math.round(Number(values.priceFrom)*100);
@@ -611,6 +639,12 @@ document.querySelector('#profile-close').addEventListener('click',()=>profileDia
 profileDialog.addEventListener('click',e=>{if(e.target===profileDialog)profileDialog.close();});
 profileForm.addEventListener('submit',async event=>{
   event.preventDefault();if(!currentUser||!profileForm.reportValidity())return;
+  const invalid=profileFormError(Object.fromEntries(new FormData(profileForm)));
+  if(invalid){
+    profileMessage.textContent=T(invalid.key);
+    profileForm.elements[invalid.field].focus();
+    return;
+  }
   const b=profileForm.querySelector('[type="submit"]');b.disabled=true;profileMessage.textContent=T('savingProfile');
   try{await saveProfile();profileDialog.close();renderProfile();showToast(currentProfile.status==='pending'?T('profileSaved'):T('profileUpdated'));}
   catch(error){console.error(error);profileMessage.textContent=String(error?.message||'').includes('moderation')?T('profileModerationError'):T('profileSaveError');}

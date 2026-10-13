@@ -197,3 +197,15 @@ A contagem da home distingue **0 confirmado** de **erro de rede** e estado de ca
 O Perto agora mostra orientações de caixa de entrada/spam após `auth.signUp` sem sessão e quando o login retorna `Email not confirmed`. O usuário pode solicitar manualmente novo e-mail por `auth.resend({type:'signup', email, options:{emailRedirectTo}})` — sem disparo automático. O endereço de retorno mantém **somente** os parâmetros aprovados da intenção original (cadastro de prestador ou pedido específico). Há um bloqueio local de 60 segundos após sucesso, mas o servidor de autenticação continua responsável pelos limites reais. Respostas de cadastro e reenvio evitam confirmar a existência de contas.
 
 **Obrigatório antes de convidar profissionais reais:** autorizar a origem `https://helioconde.github.io/perto/` e os links de retorno parametrizados em Auth → URL Configuration do Supabase compartilhado, conferir o template de e-mail e testar confirmação + reenvio usando um e-mail real. Não alterar o Site URL global. Testes de navegador são simulados; não comprovam entrega efetiva de e-mail.
+
+## 20. Restrições de qualidade para perfis (13/10/2026)
+
+Migração aplicada **somente** em `public.perto_professionals` no Supabase compartilhado, registro `20261013091812_perto_profile_content_quality`. Foram verificados os cinco CHECKs em produção:
+
+- Nome comercial: 2 a 120 caracteres sem contar whitespace no começo/fim.
+- Cidade: 2 a 100.
+- Categoria: 2 a 100 (preserva categorias antigas fora do seletor para edição).
+- Descrição: 15 a 1200.
+- Estado: uma das 27 UFs brasileiras.
+
+Essas regras também são verificadas no navegador, com mensagens compreensíveis, antes de inserir/atualizar linhas. Preços opcionais são limitados à faixa do tipo `integer` em centavos. **Zero cadastros existentes foram afetados; não houve alterações em outras tabelas do projeto compartilhado.**
