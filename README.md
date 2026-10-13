@@ -83,3 +83,11 @@ Para consultar a checklist de publicação/autenticação e limites do MVP, veja
 - A identidade entre visita e cadastro é preservada no link e na confirmação de e-mail, mas **nenhum perfil ou orçamento é criado automaticamente**.
 - O sitemap inclui apenas esta página genérica, não milhares de páginas locais. Não há ferramentas de disparo automático de mensagens.
 - Verificação automática cobre prévia social, idioma, parâmetros inválidos, encaminhamento e preservação de dados. **Testes com Supabase Auth real permanecem pendentes de liberação dos redirect URLs**.
+
+## Visibilidade da moderação
+
+- Perfis pendentes, pausados e rejeitados trazem orientação de próximos passos **sem aparecer em buscas públicas**.
+- O prestador pode pressionar **Verificar status**; o frontend consulta somente sua linha por ID e dono, mantendo a proteção RLS existente.
+- Após aprovação, o botão de compartilhar surge sem recarregar a página. Editar perfil ativo avisa que as alterações devolvem o anúncio à revisão.
+- Perfis rejeitados podem corrigir os detalhes e reenviar para análise. Nenhum usuário recebe poder de mudar diretamente o status de aprovação.
+- Auditoria no Supabase em 13/10: **zero moderadores cadastrados**. Sem liberar uma conta real de confiança pelo SQL Editor, o painel não consegue aprovar ninguém.

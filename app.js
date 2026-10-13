@@ -260,6 +260,16 @@ function renderRequestList(){
   }).join(''):'<div class="empty-box compact"><strong>'+escapeHtml(T(requestFilter==='all'?'noRequests':'noRequestsFilter'))+'</strong><span>'+escapeHtml(T('noRequestsHelp'))+'</span></div>';
 }
 
+function profileStatusGuidance(status){
+  const details={
+    pending:'profileReviewPending',
+    active:'profileReviewActive',
+    rejected:'profileReviewRejected',
+    paused:'profileReviewPaused'
+  };
+  return T(details[status]||'profileReviewPending');
+}
+
 function renderProfile(){
   if(!currentUser){
     profileBox.innerHTML='<div class="empty-box compact"><strong>'+escapeHtml(T('offerService'))+'</strong><span>'+escapeHtml(T('loginForProfile'))+'</span><button class="button ghost" type="button" data-open-account>'+escapeHtml(T('signIn'))+'</button></div>';
@@ -273,9 +283,11 @@ function renderProfile(){
     '<div class="profile-head"><div><strong>'+escapeHtml(currentProfile.display_name)+'</strong><span>'+escapeHtml(currentProfile.category)+' · '+escapeHtml(currentProfile.city)+'/'+escapeHtml(currentProfile.state)+'</span></div><span class="profile-status '+escapeHtml(currentProfile.status)+'">'+escapeHtml(statusLabel(currentProfile.status))+'</span></div>'+
     '<p>'+escapeHtml(currentProfile.description||'')+'</p>'+
     '<div class="profile-price">'+escapeHtml(T('profileCost'))+' <strong>'+escapeHtml(money(currentProfile.price_from_cents))+'</strong></div>'+
-    '<button class="button ghost full" type="button" data-edit-profile>'+escapeHtml(T('editProfile'))+'</button>'+ 
+    '<div class="profile-guidance" role="status"><strong>'+escapeHtml(T('profileStatusHeading'))+'</strong><p>'+escapeHtml(profileStatusGuidance(currentProfile.status))+'</p></div>'+
+    '<div class="profile-actions">'+
+    '<button class="button ghost" type="button" data-edit-profile>'+escapeHtml(T('editProfile'))+'</button>'+
+    '<button class="button ghost" type="button" data-refresh-profile>'+escapeHtml(T('refreshProfileStatus'))+'</button></div>'+
     (currentProfile.status==='active'?shareActions(currentProfile):'')+
-    (currentProfile.status==='pending'?'<small class="moderation-note">'+escapeHtml(T('awaitingModeration'))+'</small>':'')+
   '</article>';
 }
 
@@ -311,8 +323,39 @@ function openProfileEditor(){
     profileForm.elements.category.value=values.category;
     document.querySelector('#profile-title').textContent=T('createProfile');
   }
+  const hint=document.querySelector('#profile-review-hint');
+  hint.hidden=!currentProfile||currentProfile.status==='pending';
+  hint.textContent=currentProfile?.status==='active'
+    ?T('profileEditRequiresReview')
+    :T('profileEditMayResubmit');
   profileMessage.textContent='';
   profileDialog.showModal();
+}
+
+async function refreshOwnProfile(){
+  const owner=currentUser?.id;
+  const id=currentProfile?.id;
+  if(!owner||!id||!supabaseClient)return;
+  const button=profileBox.querySelector('[data-refresh-profile]');
+  if(button)button.disabled=true;
+  try{
+    const {data,error}=await supabaseClient.from('perto_professionals')
+      .select('id,user_id,display_name,city,state,category,description,price_from_cents,rating,status,created_at,updated_at')
+      .eq('id',id).eq('user_id',owner).maybeSingle();
+    if(currentUser?.id!==owner||currentProfile?.id!==id)return;
+    if(error)throw error;
+    if(!data){showToast(T('profileRefreshMissing'));return;}
+    const changed=data.status!==currentProfile.status;
+    currentProfile=data;
+    renderProfile();
+    showToast(T(changed?'profileRefreshChanged':'profileRefreshUnchanged'));
+    if(changed)await loadActiveCount();
+  }catch(error){
+    if(currentUser?.id===owner){console.error(error);showToast(T('profileRefreshFailed'));}
+  }finally{
+    const refreshed=profileBox.querySelector('[data-refresh-profile]');
+    if(refreshed)refreshed.disabled=false;
+  }
 }
 
 async function saveProfile(){
@@ -491,6 +534,7 @@ requestList.addEventListener('click',async event=>{
 profileBox.addEventListener('click',event=>{
   if(event.target.closest('[data-create-profile]')||event.target.closest('[data-edit-profile]'))openProfileEditor();
   if(event.target.closest('[data-open-account]'))accountDialog.showModal();
+  if(event.target.closest('[data-refresh-profile]'))refreshOwnProfile();
 });
 document.querySelector('#profile-close').addEventListener('click',()=>profileDialog.close());
 profileDialog.addEventListener('click',e=>{if(e.target===profileDialog)profileDialog.close();});

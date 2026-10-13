@@ -118,3 +118,11 @@
 .invite-clarity .button{display:inline-flex;align-items:center;min-height:44px}
 @media(max-width:880px){.invite-hero{grid-template-columns:1fr;gap:14px}.invite-benefits{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}.invite-benefits>div{border-bottom:0;padding:12px 0}.invite-benefits strong{font-size:14px}}
 @media(max-width:580px){.invite-page{padding-top:27px}.invite-hero{padding-bottom:20px}.invite-hero h1{letter-spacing:-1.3px}.invite-lead{font-size:15px}.invite-actions{flex-direction:column;align-items:stretch}.invite-actions .button{width:100%}.invite-benefits{display:block}.invite-benefits>div{padding:13px 0;border-bottom:1px solid var(--line)}.invite-benefits>div:last-child{border:0}.invite-steps{grid-template-columns:1fr}.invite-steps li{min-height:auto}.invite-how{padding-top:17px}}
+
+/* Clear professional listing state and manual, owner-only refresh. */
+.profile-guidance{padding:13px 14px;background:var(--soft);border:1px solid var(--line);border-radius:11px}
+.profile-guidance strong{display:block;color:var(--accent-dark);font-size:13px}
+.profile-guidance p{margin:6px 0 0;color:var(--ink);font-size:12px;line-height:1.6}
+.profile-actions{display:flex;gap:9px;flex-wrap:wrap}
+.profile-actions .button{flex:1 1 135px;min-height:43px}
+.profile-review-hint{padding:11px 13px;border:1px solid #e1cfab;background:var(--pending-soft);color:#745514;border-radius:10px;font-size:13px;line-height:1.55}

@@ -751,3 +751,69 @@ test('invitation landing supports English and keeps consent-based contact only',
   expect(url.searchParams.get('lang')).toBeNull();
   expect(url.searchParams.get('cidade')).toBe('Boston');
 });
+
+
+test('pending professional sees clear moderation status without sharing link', async ({ page }) => {
+  const owned={...activeProfile,status:'pending',id:'97979797-9797-4979-8979-979797979797'};
+  await installMock(page,{user:{id:owned.user_id,email:'pendente@example.test'},profiles:[owned]});
+  await page.goto('/');
+  await expect(page.locator('.profile-status')).toHaveText('Em análise');
+  await expect(page.locator('.profile-guidance')).toContainText('aguarda análise');
+  await expect(page.locator('[data-refresh-profile]')).toBeVisible();
+  await expect(page.locator('#professional-profile [data-copy-profile]')).toHaveCount(0);
+});
+
+test('professional can refresh own listing after approval without exposing another profile', async ({ page }) => {
+  const owned={...activeProfile,status:'pending',id:'98989898-9898-4989-8989-989898989898'};
+  await installMock(page,{user:{id:owned.user_id,email:'ativo@example.test'},profiles:[owned]});
+  await page.goto('/');
+  await expect(page.locator('.profile-status')).toHaveText('Em análise');
+  await page.evaluate(()=>{window.__pertoTest.profiles[0].status='active'});
+  await page.locator('[data-refresh-profile]').click();
+  await expect(page.locator('.profile-status')).toHaveText('Ativo');
+  await expect(page.locator('.profile-guidance')).toContainText('visível na busca');
+  await expect(page.locator('#professional-profile [data-copy-profile]')).toBeVisible();
+  await expect(page.locator('#toast')).toContainText('Situação do perfil atualizada');
+});
+
+test('refresh without status change gives honest feedback', async ({ page }) => {
+  const owned={...activeProfile,status:'pending',id:'99999999-9999-4999-8999-999999999999'};
+  await installMock(page,{user:{id:owned.user_id,email:'sem-mudanca@example.test'},profiles:[owned]});
+  await page.goto('/');
+  await page.locator('[data-refresh-profile]').click();
+  await expect(page.locator('.profile-status')).toHaveText('Em análise');
+  await expect(page.locator('#toast')).toContainText('Nenhuma mudança');
+});
+
+test('rejected professional can edit the content and request reapproval', async ({ page }) => {
+  const owned={...activeProfile,status:'rejected',id:'a1a1a1a1-a1a1-4a1a-8a1a-a1a1a1a1a1a1'};
+  await installMock(page,{user:{id:owned.user_id,email:'rejeitado@example.test'},profiles:[owned]});
+  await page.goto('/');
+  await expect(page.locator('.profile-guidance')).toContainText('não foi aprovado');
+  await expect(page.locator('#professional-profile [data-copy-profile]')).toHaveCount(0);
+  await page.locator('[data-edit-profile]').click();
+  await expect(page.locator('#profile-review-hint')).toContainText('será enviado novamente');
+  await page.locator('#profile-form [name="description"]').fill('Descrição corrigida para nova análise.');
+  await page.locator('#profile-form [type="submit"]').click();
+  await expect(page.locator('.profile-status')).toHaveText('Em análise');
+  const payload=await page.evaluate(()=>window.__pertoTest.updated.find(x=>x.table==='perto_professionals').payload);
+  expect(payload).not.toHaveProperty('status');
+});
+
+test('active profile editing warns the owner about losing public visibility', async ({ page }) => {
+  const owned={...activeProfile,id:'a2a2a2a2-a2a2-4a2a-8a2a-a2a2a2a2a2a2'};
+  await installMock(page,{user:{id:owned.user_id,email:'publico@example.test'},profiles:[owned]});
+  await page.goto('/');
+  await page.locator('[data-edit-profile]').click();
+  await expect(page.locator('#profile-review-hint')).toContainText('retirando-o temporariamente da busca');
+});
+
+test('listing status refresh and guidance follow the English interface', async ({ page }) => {
+  const owned={...activeProfile,status:'paused',id:'a3a3a3a3-a3a3-4a3a-8a3a-a3a3a3a3a3a3'};
+  await installMock(page,{user:{id:owned.user_id,email:'pausa@example.test'},profiles:[owned]});
+  await page.goto('/');
+  await page.locator('[data-perto-lang="en"]').click();
+  await expect(page.locator('.profile-guidance')).toContainText('paused and hidden');
+  await expect(page.locator('[data-refresh-profile]')).toHaveText('Check status');
+  await expect(page.locator('#professional-profile [data-copy-profile]')).toHaveCount(0);
+});

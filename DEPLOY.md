@@ -8,7 +8,7 @@ O projeto agora está em **[`HelioConde/perto`, branch `main`](https://github.co
 - [x] Todos os 37 arquivos da branch `split/perto` importados em uma única migração para `main`.
 - [x] Comparação de SHA dos blobs entre origem e destino: 37/37 arquivos idênticos.
 - [x] Executados os primeiros workflows Static QA, Live Update QA e Live version no novo repositório.
-- [ ] Workflow GitHub Pages — aguarda ativação em Settings → Pages.
+- [x] Workflow GitHub Pages — ativado e publicação confirmada.
 
 O histórico de trabalho anterior continua preservado em `HelioConde/ideias-ia-lab` como backup. A partir desta publicação, desenvolvimento e CI devem acontecer **somente em `HelioConde/perto`**.
 
@@ -16,7 +16,7 @@ O histórico de trabalho anterior continua preservado em `HelioConde/ideias-ia-l
 
 Em `HelioConde/perto`: Settings → Pages → Build and deployment → Source → **GitHub Actions**. Depois acione o workflow `Perto — Publish GitHub Pages`, se necessário.
 
-URL prevista **depois de publicar**: https://helioconde.github.io/perto/ (não considerar como site ativo antes de o Pages ficar verde).
+URL de produção: https://helioconde.github.io/perto/ (Pages publicado; não confundir deploy com homologação de contas reais).
 
 ## 3. Configurar autenticação no Supabase existente
 
@@ -43,7 +43,7 @@ Não divulgar como verificados: aprovação de conteúdo ainda não é validaç�
 - [x] testes Browser E2E desktop/mobile versionados;
 - [x] workflow de publicação, sitemap, robots e páginas legais preparados;
 - [x] repositório `HelioConde/perto` criado e main importada (37/37 arquivos idênticos);
-- [ ] CI da main e GitHub Pages verdes no novo repositório;
+- [x] CI da main e GitHub Pages verdes no novo repositório;
 - [ ] validação real: duas contas, navegador desktop/mobile, pedido, privacidade, cancelamento e aprovação;
 - [ ] canal de suporte/privacidade dedicado e revisão jurídica dos textos antes de abrir cadastro ao público;
 - [ ] coleta de feedback real e testes de abuso/volume;
@@ -167,3 +167,17 @@ O banco compartilhado tinha **zero profissionais cadastrados e zero pedidos** no
 - O sinal de cadastro profissional e abertura automática da autenticação representa um CTA explícito. A abertura automática é descartada antes do e-mail de confirmação; a intenção de cadastrar profissional, cidade, UF e categoria seguem para permitir retomada legítima.
 - Páginas de perfis continuam somente com consulta pública aos perfis ativos, sem alegar SEO individual pré-renderizado.
 - Antes da campanha, testar o cadastro e a confirmação em duas contas reais, a moderação e o pedido de orçamento. O projeto Supabase compartilhado ainda exige configuração/validação da allowlist de redirecionamentos.
+
+## 16. Estado real da moderação — 13/10/2026
+
+Uma consulta somente de leitura ao Supabase compartilhado confirmou: **0 moderadores autorizados, 0 profissionais cadastrados e 0 pedidos de orçamento**. O deploy está correto, mas **nenhuma conta pode aprovar perfis via painel** enquanto o papel de moderador não for atribuído por uma operação administrativa confiável.
+
+Passos para habilitar com segurança:
+
+1. Cadastrar uma conta real de moderação e confirmar o e-mail.
+2. Conferir no painel Supabase o ID do usuário autenticado e autorizar **somente essa conta** pela operação SQL documentada na seção 6. Não atribuir privilégios a e-mails não verificados nem a todos os usuários.
+3. Abrir https://helioconde.github.io/perto/admin.html como moderador, verificar a fila vazia e o acesso permitido. Abrir outra sessão como usuário comum e conferir o bloqueio.
+4. Concluir o teste entre um profissional real, o moderador e um cliente diferente. Não criar perfis fictícios na base pública.
+5. Revisar Auth Redirect URLs na configuração do projeto compartilhado (seção 9), sem alterar o Site URL de outros aplicativos.
+
+A nova interface do prestador mostra o status (pendente, aprovado, rejeitado, pausado), permite atualização **manual** do status somente do próprio perfil e explica que mudanças em um perfil aprovado exigem nova moderação. O aplicativo não promete prazo de aprovação nem envia notificações inexistentes.
