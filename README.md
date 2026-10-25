@@ -1,4 +1,23 @@
-# Perto
+# Perto — Encontre profissionais na sua cidade
+
+**Marketplace local moderado que aproxima clientes de profissionais e organiza pedidos privados de orçamento.**
+
+[**Abrir versão publicada**](https://helioconde.github.io/perto/) · [**Guia de publicação**](DEPLOY.md)
+
+![Status](https://img.shields.io/badge/status-em%20homologação-64748b)
+
+## Visão rápida
+
+- **Para clientes:** busque profissionais ativos por categoria e cidade.
+- **Para profissionais:** crie o perfil e aguarde revisão antes da publicação.
+- **Privacidade:** os pedidos de orçamento são enviados dentro de fluxos autenticados.
+- **Moderação:** perfis precisam ser aprovados; não existe promessa de catálogo completo.
+
+**Atenção:** a publicação do site não equivale a homologação para uso amplo. Testes com contas reais, privacidade e suporte continuam importantes antes de um beta público.
+
+O README abaixo documenta regras de segurança, validação e estratégias de aquisição de usuários.
+
+---
 
 Marketplace local moderado para encontrar profissionais ativos por cidade/categoria e encaminhar **pedidos privados de orçamento**.
 
